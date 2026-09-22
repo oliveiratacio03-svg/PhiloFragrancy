@@ -304,7 +304,7 @@
   letter-spacing: 0.2em;
   text-decoration: none;
 }
-.brand-mark > span:nth-child(2) { color: #000; }
+.brand-mark > span:nth-child(2) { color: var(--philo-gold); }
 .brand-mark__ornament { font-family: Georgia, serif; font-size: 1.4rem; line-height: 0; }
 .site-nav { display: flex; gap: clamp(1rem, 3vw, 3rem); }
 .site-nav a, .header-action, .footer-links a {
@@ -328,6 +328,8 @@
 h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 h1 { margin: 1rem 0; color: var(--philo-ivory); font-size: clamp(3.5rem, 8vw, 8.2rem); line-height: 0.82; letter-spacing: 0.02em; }
 h1 span { display: block; color: var(--philo-gold); font-size: 0.76em; font-style: italic; letter-spacing: -0.04em; }
+.hero__copy h1 { max-width: 15rem; margin: 0.5rem 0; color: #050505; font-size: clamp(2rem, 4vw, 4rem); line-height: 0.84; letter-spacing: 0.01em; }
+.hero__copy h1 span { color: #050505; font-size: 0.72em; }
 h1 em, h2 em { color: var(--philo-gold); font-style: italic; }
 .hero__note { margin-bottom: 2rem; color: rgba(244, 240, 232, 0.86); font-family: Georgia, serif; font-size: 1rem; letter-spacing: 0.05em; }
 .gold-button { display: inline-flex; align-items: center; gap: 1.25rem; padding: 0.86rem 1.1rem 0.82rem; border: 1px solid var(--philo-gold); color: var(--philo-ink); background: var(--philo-gold); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.16em; text-decoration: none; text-transform: uppercase; transition: background 0.35s ease, color 0.35s ease; }
