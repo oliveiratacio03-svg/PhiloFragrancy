@@ -27,7 +27,7 @@ export default function HomeRoute() {
           <img className="hero__venus" src={venusImage} alt="Golden textured Venus against a black background" />
           <div className="hero__overlay" />
           <div className="hero__copy">
-            <h1 id="hero-title" style={{ marginLeft: "auto", marginRight: "auto" }}>PHILO<span>FRAGRANCY</span></h1>
+            <h1 id="hero-title" style={{ marginLeft: 0, marginRight: 0, display: "flex", flexDirection: "column", alignSelf: "start" }}>PHILO<span>FRAGRANCY</span></h1>
             <p className="hero__note">Find your signature.</p>
             <GoldButton>Ver cupons</GoldButton>
           </div>
