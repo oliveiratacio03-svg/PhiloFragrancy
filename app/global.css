@@ -329,7 +329,7 @@ h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 h1 { margin: 1rem 0; color: var(--philo-ivory); font-size: clamp(3.5rem, 8vw, 8.2rem); line-height: 0.82; letter-spacing: 0.02em; }
 h1 span { display: block; color: var(--philo-gold); font-size: 0.76em; font-style: italic; letter-spacing: -0.04em; }
 .hero__copy h1 { align-self: flex-start; max-width: none; margin: 0.5rem 0; color: var(--philo-ivory); font-size: clamp(3.5rem, 7vw, 7rem); line-height: 0.84; letter-spacing: 0.01em; }
-.hero__copy h1 span { margin-top: -24px; color: var(--philo-gold); font-size: 0.72em; }
+.hero__copy h1 span { margin-top: 0; color: var(--philo-gold); font-size: 0.72em; }
 h1 em, h2 em { color: var(--philo-gold); font-style: italic; }
 .hero__note { margin: 0 0 1.5rem; color: rgba(244, 240, 232, 0.86); font-family: Georgia, serif; font-size: 1rem; letter-spacing: 0.05em; }
 .hero__copy .gold-button { justify-self: start; }
