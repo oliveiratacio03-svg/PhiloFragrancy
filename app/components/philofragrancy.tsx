@@ -1,6 +1,4 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router";
-
 const venusImage =
   "https://cdn.builder.io/api/v1/image/assets%2F3cdea08be76f4cf0854cd79b703ae4de%2F1073a55adef145c2a5ef58c792968c08?format=webp&width=800&height=1200";
 
@@ -25,11 +23,6 @@ const featuredFragrances = [
 export function BrandHeader() {
   return (
     <header className="site-header">
-      <Link className="brand-mark" to="/" aria-label="PHILOFRAGRANCY home">
-        <span className="brand-mark__ornament">·</span>
-        <span>PHILOFRAGRANCY</span>
-        <span className="brand-mark__ornament">·</span>
-      </Link>
       <nav aria-label="Primary navigation" className="site-nav">
         <a href="#coupons">Cupons</a>
         <a href="#reviews">Reviews</a>

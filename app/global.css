@@ -281,7 +281,7 @@
 }
 
 .site-header {
-  position: fixed;
+  position: relative;
   z-index: 10;
   top: 0;
   display: grid;
@@ -290,8 +290,8 @@
   align-items: center;
   padding: 1.55rem clamp(1.25rem, 4vw, 4rem);
   border-bottom: 1px solid rgba(212, 175, 55, 0.22);
-  background: rgba(10, 10, 10, 0.78);
-  backdrop-filter: blur(12px);
+  background: #050505;
+  backdrop-filter: none;
 }
 
 .brand-mark {
@@ -306,7 +306,7 @@
 }
 .brand-mark > span:nth-child(2) { color: var(--philo-gold); }
 .brand-mark__ornament { font-family: Georgia, serif; font-size: 1.4rem; line-height: 0; }
-.site-nav { display: flex; gap: clamp(1rem, 3vw, 3rem); }
+.site-nav { grid-column: 2; display: flex; gap: clamp(1rem, 3vw, 3rem); }
 .site-nav a, .header-action, .footer-links a {
   color: rgba(244, 240, 232, 0.68);
   font-size: 0.61rem;
@@ -317,7 +317,7 @@
   transition: color 0.35s ease;
 }
 .site-nav a:hover, .site-nav a:focus-visible, .footer-links a:hover, .footer-links a:focus-visible { color: var(--philo-gold); }
-.header-action { justify-self: end; color: var(--philo-gold); }
+.header-action { grid-column: 3; justify-self: end; color: var(--philo-gold); }
 .header-action::after { display: inline-block; width: 1.35rem; margin-left: 0.55rem; border-top: 1px solid currentColor; content: ""; vertical-align: middle; }
 
 .hero { position: relative; display: grid; min-height: min(52rem, 92svh); place-items: center; overflow: hidden; isolation: isolate; background: #050505; }
@@ -390,6 +390,7 @@ h1 em, h2 em { color: var(--philo-gold); font-style: italic; }
 @media (max-width: 700px) {
   .site-header { grid-template-columns: 1fr auto; padding-block: 1.25rem; }
   .site-nav { display: none; }
+  .header-action { grid-column: 2; }
   .hero { min-height: 44rem; }
   .hero__venus { object-position: 50% center; }
   .hero__copy { right: 1.25rem; left: 1.25rem; grid-template-columns: 1fr; grid-template-rows: auto auto auto; row-gap: 1.2rem; }
