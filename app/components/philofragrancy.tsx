@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 
-const venusImage =
-  "https://cdn.builder.io/api/v1/image/assets%2F3cdea08be76f4cf0854cd79b703ae4de%2F9109a3af3a6e4f8383f1834af85cc6d8?format=webp&width=800&height=1200";
+const horizonImage =
+  "https://cdn.builder.io/api/v1/image/assets%2F3cdea08be76f4cf0854cd79b703ae4de%2Fb9688386b84e4067ba37e446428eac20?format=webp&width=800&height=1200";
+const fragranceSmokeImage =
+  "https://cdn.builder.io/api/v1/image/assets%2F3cdea08be76f4cf0854cd79b703ae4de%2F0242d0a115ba4dc8ae5e23b8cf08422a?format=webp&width=800&height=1200";
 
 export function BrandHeader() {
   return (
@@ -78,4 +80,4 @@ export function BrandFooter() {
   );
 }
 
-export { venusImage };
+export { fragranceSmokeImage, horizonImage };

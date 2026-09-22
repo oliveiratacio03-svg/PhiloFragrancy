@@ -3,7 +3,8 @@ import {
   BrandHeader,
   FeatureCard,
   GoldButton,
-  venusImage,
+  fragranceSmokeImage,
+  horizonImage,
 } from "@/components/philofragrancy";
 
 export function meta() {
@@ -29,11 +30,10 @@ export default function HomeRoute() {
             <p className="hero__note">Perfume, considered.</p>
             <GoldButton>Ver cupons</GoldButton>
           </div>
-          <div className="hero__planet-wrap" aria-label="The planet Venus" role="img">
-            <div className="hero__planet-ring hero__planet-ring--one" />
-            <div className="hero__planet-ring hero__planet-ring--two" />
-            <img className="hero__planet" src={venusImage} alt="Golden surface of Venus" />
-            <span className="hero__planet-caption">VENUS / 01</span>
+          <div className="hero__visual" aria-label="Translucent golden fragrance trails with glowing particles" role="img">
+            <img className="hero__horizon" src={horizonImage} alt="Soft pink and blue twilight over the ocean" />
+            <img className="hero__smoke" src={fragranceSmokeImage} alt="Translucent golden smoke with glowing particles" />
+            <span className="hero__visual-caption">SCENT / 01</span>
           </div>
           <div className="hero__side-note">Beauty is<br />a point of view.</div>
           <div className="hero__scroll">Scroll to explore <span>↓</span></div>
