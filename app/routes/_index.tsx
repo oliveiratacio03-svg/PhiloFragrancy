@@ -1,15 +1,15 @@
 import {
   BrandFooter,
   BrandHeader,
+  FeaturedFragrances,
   FeatureCard,
   GoldButton,
-  fragranceSmokeImage,
-  horizonImage,
+  venusImage,
 } from "@/components/philofragrancy";
 
 export function meta() {
   return [
-    { title: "PHILOFRAGRANCY — The fragrance observatory" },
+    { title: "PHILOFRAGRANCY — Perfume, considered" },
     {
       name: "description",
       content: "Coupons, reviews and intelligent perfume comparisons.",
@@ -23,21 +23,17 @@ export default function HomeRoute() {
       <BrandHeader />
 
       <main>
-        <section className="hero" aria-labelledby="hero-title">
+        <section className="hero hero--venus" aria-labelledby="hero-title">
+          <img className="hero__venus" src={venusImage} alt="Golden textured Venus against a black background" />
+          <div className="hero__overlay" />
           <div className="hero__copy">
-            <span className="eyebrow">The fragrance observatory · Est. 2025</span>
-            <h1 id="hero-title">Find your<br /><em>signature.</em></h1>
-            <p className="hero__note">Perfume, considered.</p>
+            <h1 id="hero-title">PHILO<span>FRAGRANCY</span></h1>
+            <p className="hero__note">Find your signature.</p>
             <GoldButton>Ver cupons</GoldButton>
           </div>
-          <div className="hero__visual" aria-label="Translucent golden fragrance trails with glowing particles" role="img">
-            <img className="hero__horizon" src={horizonImage} alt="Soft pink and blue twilight over the ocean" />
-            <img className="hero__smoke" src={fragranceSmokeImage} alt="Translucent golden smoke with glowing particles" />
-            <span className="hero__visual-caption">SCENT / 01</span>
-          </div>
-          <div className="hero__side-note">Beauty is<br />a point of view.</div>
-          <div className="hero__scroll">Scroll to explore <span>↓</span></div>
         </section>
+
+        <FeaturedFragrances />
 
         <section className="intro" id="about" aria-labelledby="intro-title">
           <div className="ornamental-rule"><span /> <i /> <span /></div>
