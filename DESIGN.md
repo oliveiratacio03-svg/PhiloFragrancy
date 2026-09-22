@@ -38,14 +38,14 @@ visual direction — read and preserve them on every subsequent build; do not
 re-derive a new direction. The first UI pass must fill these fields in as
 part of that build, not leave them as an empty template.
 
-- Product mode: `operate` | `read` | `persuade` | `experience`
-- Audience and cadence:
-- Visual world (name + the feeling it creates):
-- Palette family + neutral undertone:
-- Type treatment:
-- Composition:
-- Shape language:
-- Anti-references (defaults this app must not drift toward):
+- Product mode: `experience`
+- Audience and cadence: Fragrance shoppers and curious collectors; browse often, decide slowly.
+- Visual world (name + the feeling it creates): Celestial Atelier — an editorial observatory where Venus, art, and scent meet with quiet sensuality.
+- Palette family + neutral undertone: Pure ink black with antique 24k gold, warm ivory, terracotta, and a cool blue accent.
+- Type treatment: Playfair Display for the poetic brand voice; Lora for short editorial notes; Montserrat for navigation and utility labels.
+- Composition: Museum-like pacing, oversized focal imagery, centered symmetry, generous vertical rhythm, and one clear action per section.
+- Shape language: Fine hairline borders, squared geometric corners, small gold points, and softly cropped image frames; no cards with heavy shadows.
+- Anti-references (defaults this app must not drift toward): Generic dark-mode SaaS, neon gradients, glassmorphism, dense ecommerce grids, clip-art icons, and explanatory marketing paragraphs.
 
 ## Agent-native is structural, not visual
 

@@ -1,17 +1,77 @@
-import { APP_TITLE } from "@/lib/app-config";
+import {
+  BrandFooter,
+  BrandHeader,
+  FeatureCard,
+  GoldButton,
+  venusImage,
+} from "@/components/philofragrancy";
 
 export function meta() {
   return [
-    { title: APP_TITLE },
-    { name: "description", content: `${APP_TITLE} app canvas` },
+    { title: "PHILOFRAGRANCY — The fragrance observatory" },
+    {
+      name: "description",
+      content: "Coupons, reviews and intelligent perfume comparisons.",
+    },
   ];
 }
 
 export default function HomeRoute() {
   return (
-    <div className="flex h-full min-h-0 flex-1 items-center justify-center bg-background">
-      {/* TODO: FUSION_GENERATION_APP_PLACEHOLDER replace everything here with the actual app! */}
-      <p className="text-sm text-muted-foreground">Your app here</p>
+    <div className="philo-page">
+      <BrandHeader />
+
+      <main>
+        <section className="hero" aria-labelledby="hero-title">
+          <div className="hero__copy">
+            <span className="eyebrow">The fragrance observatory · Est. 2025</span>
+            <h1 id="hero-title">Find your<br /><em>signature.</em></h1>
+            <p className="hero__note">Perfume, considered.</p>
+            <GoldButton>Ver cupons</GoldButton>
+          </div>
+          <div className="hero__planet-wrap" aria-label="The planet Venus" role="img">
+            <div className="hero__planet-ring hero__planet-ring--one" />
+            <div className="hero__planet-ring hero__planet-ring--two" />
+            <img className="hero__planet" src={venusImage} alt="Golden surface of Venus" />
+            <span className="hero__planet-caption">VENUS / 01</span>
+          </div>
+          <div className="hero__side-note">Beauty is<br />a point of view.</div>
+          <div className="hero__scroll">Scroll to explore <span>↓</span></div>
+        </section>
+
+        <section className="intro" id="about" aria-labelledby="intro-title">
+          <div className="ornamental-rule"><span /> <i /> <span /></div>
+          <p className="eyebrow">A quieter way to choose scent</p>
+          <h2 id="intro-title">The art of<br /><em>wearing well.</em></h2>
+          <p className="intro__line">Independent insight for a more intentional collection.</p>
+        </section>
+
+        <section className="discovery" aria-labelledby="discovery-title">
+          <div className="section-heading">
+            <span className="section-number">01 — Discover</span>
+            <h2 id="discovery-title">Begin here.</h2>
+          </div>
+          <div className="feature-grid">
+            <FeatureCard number="01" label="Save beautifully" title="Cupons exclusivos" href="#coupons" />
+            <FeatureCard number="02" label="Know the notes" title="Reviews detalhados" href="#reviews" />
+            <FeatureCard number="03" label="Choose with clarity" title="Comparações inteligentes" href="#comparisons" />
+          </div>
+        </section>
+
+        <section className="quiet-links" aria-label="Explore PHILOFRAGRANCY">
+          <a id="coupons" href="#coupons" className="quiet-link">
+            <span>Cupons</span><span>Selected offers / 02</span>
+          </a>
+          <a id="reviews" href="#reviews" className="quiet-link">
+            <span>Reviews</span><span>Notes, trails, impressions / 03</span>
+          </a>
+          <a id="comparisons" href="#comparisons" className="quiet-link">
+            <span>Comparações</span><span>Find your accord / 04</span>
+          </a>
+        </section>
+      </main>
+
+      <BrandFooter />
     </div>
   );
 }
