@@ -35,7 +35,8 @@ dist-ssr
 .tmp/
 
 # Data
-**/data/
+/data/
+!app/data/
 data/pglite/
 data/uploads/
 data/settings.json
