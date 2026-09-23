@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 const venusImage =
-  "https://cdn.builder.io/api/v1/image/assets%2F3cdea08be76f4cf0854cd79b703ae4de%2F1073a55adef145c2a5ef58c792968c08?format=webp&width=800&height=1200";
+  "https://cdn.builder.io/api/v1/image/assets%2F3cdea08be76f4cf0854cd79b703ae4de%2F79256b1239864724a424e76218097695?format=webp&width=800&height=1200";
 
 const featuredFragrances = [
   {
