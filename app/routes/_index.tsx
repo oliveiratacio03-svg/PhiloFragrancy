@@ -33,16 +33,6 @@ export default function HomeRoute() {
           </div>
         </section>
 
-        <section className="commerce-banner" aria-label="Featured fragrance offer">
-          <img src={venusImage} alt="Golden Venus surrounded by flowers and colored smoke" />
-          <div className="commerce-banner__overlay" />
-          <div className="commerce-banner__copy">
-            <span className="eyebrow">A new signature awaits</span>
-            <h2>Find the one.</h2>
-            <a href="#coupons">Ver cupons <span aria-hidden="true">↗</span></a>
-          </div>
-        </section>
-
         <FeaturedFragrances />
 
         <section className="intro" id="about" aria-labelledby="intro-title">
