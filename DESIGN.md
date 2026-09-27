@@ -80,6 +80,44 @@ part of that build, not leave them as an empty template.
   wordmark, and type choices are unchanged. The shared `.pf-*` classes in
   `app/global.css` are the surface for this system; new UI should use them instead
   of inline style objects.
+- **Search-first homepage (2026-09-27):** the hero is now a search field, not a
+  wordmark. Venus moved from full-bleed background to a contained panel beside the
+  field, and is hidden below `md` — it is the heaviest asset on the page and it
+  does not help anyone find a fragrance. New surfaces: `.pf-search`, `.pf-deal`,
+  `.pf-table`, `.pf-steps`, `.pf-faq`, `.pf-wish`, `.pf-sample`. Two routes added,
+  `/search` and `/compare/:slug`, so the homepage has no link to a 404.
+  Two things were deliberately **not** built, and the reasons are the point:
+  - *No scroll-reveal fade.* It is the signature motion of a coupon aggregator,
+    and this brand should not borrow it. Every animation left is a state change
+    the reader caused — a hover, a disclosure, a price landing.
+  - *No coupon box.* This site issues no discount codes. A "reveal code" button
+    that copies a string no retailer honours is a broken promise with a green
+    flash on it. The card carries a plainly labelled affiliate link instead.
+- **Honesty pass (2026-09-27):** claims that no process produced were removed
+  from the product page and its structured data — the `aggregateRating`
+  (`reviewCount: 18420`, invented), the `Review` node attributed to
+  "PhiloFragrancy Editorial Panel" wrapping first-hand wear-test prose nobody
+  wrote, an `Offer` with a made-up price, a "verified today" stamp, a
+  `daysLeft = 28` countdown, and a 100% authenticity guarantee. Fabricated review
+  markup is a manual-action trigger under Google's structured data policy, so
+  this was a risk to the domain's rich results, not a white-SEO tradeoff.
+  `Product` now carries no rating, price or stock claim, and `BreadcrumbList` is
+  the only node that was always true.
+- **Sample pricing is one switch (2026-09-27):** every price, discount and demand
+  figure lives in `app/data/deals.ts` behind `PRICING_IS_SAMPLE`. The UI labels
+  those rows "Example pricing" and the label disappears on its own when real
+  checked data replaces the file. Money is in minor units, matching
+  `retailer_offers.price_cents`. A row claims a saving only when two stores have
+  a number; with one price there is nothing to save against.
+- **Public routes (2026-09-27):** the dev server put a sign-in wall in front of
+  every page, so nothing was reachable by a visitor or a crawler. Fixed in two
+  places, and both are needed — the server guard (`publicPaths` in
+  `server/plugins/auth.ts`) and the client gate (`isPublicPath` on `AppProviders`
+  in `app/root.tsx`). Miss the second and the server serves the route while the
+  browser bounces the reader to `/sign-in` after hydration. Enabling
+  `isPublicPath` drops the `<ClientOnly>` wrapper so public routes SSR, which put
+  `DbSyncSetup` back on the server render path; it renders `null`, so it is now
+  mounted client-only via `useIsClient`.
 
 ## Agent-native is structural, not visual
 

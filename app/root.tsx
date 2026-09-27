@@ -7,8 +7,8 @@ import {
 } from "@agent-native/core/client/hooks";
 import { getThemeInitScript } from "@agent-native/core/client/ui";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { useState, useSyncExternalStore } from "react";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLocation } from "react-router";
 import type { LinksFunction } from "react-router";
 
 import { Layout as AppLayout } from "@/components/layout/Layout";
@@ -67,6 +67,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * True only after hydration.
+ *
+ * `DbSyncSetup` wires the database sync loop and the agent's view of the
+ * current route, and both reach for router context that does not exist during
+ * a server render. `isPublicPath` on `AppProviders` deliberately drops the
+ * `<ClientOnly>` wrapper so public routes can SSR for crawlers, which puts this
+ * component back on the server's render path.
+ *
+ * It renders `null` either way, so mounting it client-only produces no markup
+ * difference and no hydration mismatch.
+ */
+function useIsClient(): boolean {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
+
 function DbSyncSetup() {
   const qc = useQueryClient();
   useNavigationState();
@@ -77,12 +97,39 @@ function DbSyncSetup() {
   return null;
 }
 
+/**
+ * The public catalogue, mirrored from `server/plugins/auth.ts`.
+ *
+ * Two lists are needed because the gate runs in two places: the server guard
+ * (`publicPaths`, which protects API and framework routes) and the client gate
+ * in `AppProviders` (which decides whether a first-visit signed-out reader
+ * gets the page or the sign-in screen). Miss the second one and the server
+ * happily serves the route while the browser bounces the visitor to /sign-in
+ * after hydration — the page is unreachable even though every request for it
+ * returns 200.
+ *
+ * Keep the two in step. A route that starts bouncing signed-out visitors is the
+ * one to add here, not a blanket change to the matching.
+ */
+const PUBLIC_PATHS = ["/", "/search", "/compare", "/perfumes", "/about", "/disclosure"] as const;
+
+function isPublicPathname(pathname: string): boolean {
+  const p = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  return PUBLIC_PATHS.some((candidate) => {
+    const n = candidate.length > 1 && candidate.endsWith("/") ? candidate.slice(0, -1) : candidate;
+    return p === n || p.startsWith(`${n}/`);
+  });
+}
+
 export default function Root() {
   const [queryClient] = useState(() => createAgentNativeQueryClient());
+  const location = useLocation();
+  const isClient = useIsClient();
+
   return (
     <AppToolkitProvider>
-      <AppProviders queryClient={queryClient}>
-        <DbSyncSetup />
+      <AppProviders queryClient={queryClient} isPublicPath={isPublicPathname(location.pathname)}>
+        {isClient && <DbSyncSetup />}
         <AppLayout>
           <Outlet />
         </AppLayout>

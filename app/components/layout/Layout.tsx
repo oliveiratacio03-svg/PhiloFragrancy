@@ -1,11 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router";
 
+/**
+ * Nav targets. Every one of these resolves to a section or route that exists —
+ * the previous list carried two separate entries pointing at `#compare`, one of
+ * them labelled COUPONS, for a coupon section this site no longer has.
+ */
 const NAV_LINKS = [
-  { href: "/#explore", label: "FRAGRANCES" },
-  { href: "/#compare", label: "COUPONS" },
+  { href: "/search", label: "SEARCH" },
+  { href: "/#featured", label: "OFFERS" },
+  { href: "/#compare", label: "COMPARE" },
   { href: "/#reviews", label: "REVIEWS" },
-  { href: "/#compare", label: "COMPARISONS" },
   { href: "/about", label: "ABOUT" },
 ];
 
@@ -22,7 +27,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setMobileOpen(false);
-  }, [location.pathname]);
+    /* `key` on the whole location, not just the pathname: tapping a #anchor on
+       the page you are already on changes the hash and nothing else, and the
+       mobile menu has to close for that case too. */
+  }, [location.pathname, location.hash]);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#070707] text-[#e5e5e7]">
@@ -43,9 +51,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           <nav aria-label="Primary" className="hidden items-center gap-9 md:flex">
             {NAV_LINKS.map((link) => (
-              <a key={link.label} href={link.href} className="pf-navlink">
+              <Link key={link.label} to={link.href} className="pf-navlink">
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -75,14 +83,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <nav aria-label="Mobile" className="border-t border-white/10 bg-[#070707] md:hidden">
             <div className="pf-container flex flex-col py-2">
               {NAV_LINKS.map((link) => (
-                <a
+                <Link
                   key={link.label}
-                  href={link.href}
+                  to={link.href}
                   onClick={() => setMobileOpen(false)}
                   className="border-b border-white/5 py-4 text-[0.8rem] tracking-[0.14em] text-[#e5e5e7] no-underline last:border-0"
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
             </div>
           </nav>
@@ -107,9 +115,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             <nav aria-label="Footer" className="flex flex-wrap gap-x-8 gap-y-3">
               {[...NAV_LINKS, { href: "/disclosure", label: "DISCLOSURE" }].map((item) => (
-                <a key={item.label} href={item.href} className="pf-navlink">
+                <Link key={item.label} to={item.href} className="pf-navlink">
                   {item.label}
-                </a>
+                </Link>
               ))}
             </nav>
           </div>

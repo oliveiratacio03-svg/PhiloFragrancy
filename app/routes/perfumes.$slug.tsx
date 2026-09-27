@@ -1,6 +1,5 @@
-﻿import { useState } from "react";
-import { Link, useParams } from "react-router";
-import { useActionQuery } from "@agent-native/core/client";
+﻿import { Link, useParams } from "react-router";
+import { useActionQuery } from "@agent-native/core/client/hooks";
 import { PERFUMES, COUPONS } from "@/data/coupons";
 import { FragranceReview, type FragranceReviewData } from "@/components/review/FragranceReview";
 
@@ -9,20 +8,22 @@ export function meta({ params }: { params: { slug: string } }) {
   if (!perfume) {
     return [{ title: "Fragrance Not Found — PhiloFragrancy" }];
   }
-  const coupon = COUPONS.find((c) => c.perfumeId === perfume.id);
-  const discountText = coupon ? `(${coupon.discount})` : "";
 
+  /* These used to promise a "verified discount code" and a coupon keyword
+     string. Neither is true of this site any more, and a title promising a code
+     that does not exist is the most expensive kind of lie to leave in a search
+     result. */
   return [
     {
-      title: `${perfume.name} by ${perfume.brand} Coupon Code ${discountText} & Expert Review | PhiloFragrancy`,
+      title: `${perfume.name} by ${perfume.brand} — Review & Where to Buy | PhiloFragrancy`,
     },
     {
       name: "description",
-      content: `Save on authentic ${perfume.name} by ${perfume.brand}. In-depth review, longevity ratings, olfactory notes breakdown (top, heart, base), and verified discount code.`,
+      content: `An independent read on ${perfume.name} by ${perfume.brand}: the note pyramid top to base, how the drydown behaves, who it suits, and the retailer offers listed for it.`,
     },
     {
       name: "keywords",
-      content: `${perfume.name} coupon, ${perfume.brand} discount code, ${perfume.name} review, buy ${perfume.name} cheap, authentic ${perfume.name}`,
+      content: `${perfume.name} review, ${perfume.brand} ${perfume.name}, ${perfume.name} notes, what does ${perfume.name} smell like, where to buy ${perfume.name}`,
     },
     {
       name: "robots",
@@ -30,11 +31,11 @@ export function meta({ params }: { params: { slug: string } }) {
     },
     {
       property: "og:title",
-      content: `${perfume.name} by ${perfume.brand} — Coupon & Expert Review`,
+      content: `${perfume.name} by ${perfume.brand} — Review & Where to Buy`,
     },
     {
       property: "og:description",
-      content: `Tested performance: ${perfume.longevity}/10 longevity. Save with verified retailer promo code.`,
+      content: `The note pyramid, the drydown, and the retailer offers listed for ${perfume.name}.`,
     },
     {
       property: "og:image",
@@ -46,7 +47,6 @@ export function meta({ params }: { params: { slug: string } }) {
 export default function PerfumeDetailRoute() {
   const { slug } = useParams();
   const perfume = PERFUMES.find((p) => p.slug === slug);
-  const [copied, setCopied] = useState(false);
 
   /**
    * The stored editorial review replaces the legacy inline copy when one exists.
@@ -76,28 +76,41 @@ export default function PerfumeDetailRoute() {
   }
 
   const coupon = COUPONS.find((c) => c.perfumeId === perfume.id);
-  const daysLeft = 28;
 
-  // Handles clicking the coupon or CTA button:
-  // 1. Copies code to clipboard
-  // 2. Redirects user directly to affiliate URL
-  const handleClaimOffer = () => {
-    if (coupon?.code) {
-      try {
-        navigator.clipboard.writeText(coupon.code);
-      } catch (err) {
-        // clipboard fallback
-      }
-      setCopied(true);
-      setTimeout(() => setCopied(false), 3000);
-    }
+  /**
+   * Where the retailer link points. Nothing else.
+   *
+   * This used to copy a discount code to the clipboard first and flash a
+   * confirmation, on the promise that the code would then apply at checkout.
+   * The codes in `coupons.ts` are not issued by any retailer we work with, so
+   * that promise was false and the clipboard write was a way of making the
+   * failure feel like a success. A plain link cannot lie: the reader lands on
+   * the retailer's own page and sees whatever is genuinely on offer.
+   */
+  const retailerUrl = perfume.affiliateUrl || coupon?.retailLink || "https://www.fragrancenet.com";
 
-    // Direct redirect to affiliate link in new tab or same window
-    const targetUrl = perfume.affiliateUrl || coupon?.retailLink || "https://www.fragrancenet.com";
-    window.open(targetUrl, "_blank", "noopener,noreferrer");
-  };
-
-  // Structured Data for Google Ads DSA & SEO
+  /**
+   * Structured data, cut back to what is actually true.
+   *
+   * Three things were removed here and none of them should come back without a
+   * real source behind them:
+   *
+   *  - `aggregateRating` (ratingValue 4.8, reviewCount 18420). Those counts
+   *    were invented. Google's structured data policy treats fabricated review
+   *    markup as a manual-action trigger, so this was never a white-SEO tradeoff
+   *    — it was a way for the domain to lose its rich results entirely.
+   *  - a `Review` node attributed to "PhiloFragrancy Editorial Panel" wrapping
+   *    prose that claims first-hand wear-testing ("our wear-tests yielded 9.5
+   *    hours", "in our testing room"). Nobody here has sprayed these bottles.
+   *    Publishing that as a first-party review is a false statement, and it was
+   *    being handed to a search engine as one.
+   *  - an `Offer` carrying an invented `price`, plus a FAQPage asserting our
+   *    codes are "verified daily with partner retailers".
+   *
+   * What remains is deliberately modest. `BreadcrumbList` is the only node here
+   * that was always true, and the `Product` node now says nothing about
+   * ratings, price or stock that we have not checked.
+   */
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -106,66 +119,27 @@ export default function PerfumeDetailRoute() {
         "name": `${perfume.name} by ${perfume.brand}`,
         "image": perfume.image ? `https://philofragrancy.com${perfume.image}` : undefined,
         "description": perfume.description,
+        "url": `https://philofragrancy.com/perfumes/${perfume.slug}`,
         "brand": {
           "@type": "Brand",
           "name": perfume.brand,
         },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": perfume.rating,
-          "reviewCount": perfume.reviewCount,
-          "bestRating": "5",
-          "worstRating": "1",
-        },
-        "offers": {
-          "@type": "Offer",
-          "url": perfume.affiliateUrl,
-          "priceCurrency": "USD",
-          "price": perfume.discountedPrice,
-          "priceValidUntil": coupon?.expiresAt || "2026-12-31",
-          "itemCondition": "https://schema.org.NewCondition",
-          "availability": "https://schema.org/InStock",
-          "seller": {
-            "@type": "Organization",
-            "name": coupon?.retailer || "Authorized Luxury Retailer",
-          },
-        },
       },
       {
-        "@type": "Review",
-        "itemReviewed": {
-          "@type": "Product",
-          "name": perfume.name,
-        },
-        "author": {
-          "@type": "Organization",
-          "name": "PhiloFragrancy Editorial Panel",
-        },
-        "reviewRating": {
-          "@type": "Rating",
-          "ratingValue": perfume.rating,
-          "bestRating": "5",
-        },
-        "reviewBody": perfume.fullReview,
-      },
-      {
-        "@type": "FAQPage",
-        "mainEntity": [
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://philofragrancy.com/" },
           {
-            "@type": "Question",
-            "name": `Is the discount coupon for ${perfume.name} authentic and working?`,
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": `Yes. Our discount codes are verified daily with partner retailers. The code ${coupon?.code || "DEAL"} provides ${coupon?.discount || "exclusive savings"} on authentic bottles.`,
-            },
+            "@type": "ListItem",
+            position: 2,
+            name: "Fragrances",
+            item: "https://philofragrancy.com/#explore",
           },
           {
-            "@type": "Question",
-            "name": `How long does ${perfume.name} last on skin?`,
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": `In our independent lab wear-tests, ${perfume.name} scored a longevity rating of ${perfume.longevity}/10, sustaining between 8 to 12 hours of noticeable scent projection depending on skin chemistry and climate.`,
-            },
+            "@type": "ListItem",
+            position: 3,
+            name: `${perfume.brand} ${perfume.name}`,
+            item: `https://philofragrancy.com/perfumes/${perfume.slug}`,
           },
         ],
       },
@@ -242,50 +216,42 @@ export default function PerfumeDetailRoute() {
             {/* Editorial One-Liner */}
             <p className="pf-lede mt-6">{perfume.description}</p>
 
-            {/* ── THE AFFILIATE COUPON CARD (Direct Affiliate Redirection on Click) ── */}
+            {/* ── WHERE TO BUY ──
+                This used to be a coupon card: a "Verified today" line, a
+                `daysLeft` countdown hardcoded to 28, a discount label, and a
+                "from $X / You Save $Y" block. None of it was checked by
+                anything. A verification stamp that no process produces is worse
+                than no stamp, so the card now says only what is true — which
+                retailer we link to, and that the price is theirs to set.
+
+                The figures live on /compare/:slug instead, where they carry a
+                visible "example pricing" label. */}
             {coupon && (
               <div className="pf-card mt-9 p-7">
-                {/* Quiet verification meta line */}
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <p className="pf-meta">Verified today · {daysLeft} days left</p>
-                  <p className="pf-meta">Store: {coupon.retailer}</p>
-                </div>
+                <p className="pf-meta">Where to buy</p>
 
-                <p className="mt-6 text-[1.6rem] font-semibold leading-none text-gold">
-                  {coupon.discount}
-                </p>
+                <p className="mt-4 text-[1.35rem] font-semibold text-white">{coupon.retailer}</p>
                 <p className="mt-3 text-[0.85rem] leading-relaxed text-[#e5e5e7]">
-                  {coupon.description}
+                  We do not sell this fragrance. The link below opens {coupon.retailer}&rsquo;s own
+                  product page, where the current price, stock and delivery terms are theirs to set.
                 </p>
 
-                {/* Price Display */}
-                <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[rgba(255,255,255,0.08)] pb-5">
-                  <span className="text-[1.75rem] font-bold text-white">
-                    from ${perfume.discountedPrice}
-                  </span>
-                  <span className="text-[1rem] text-[rgba(255,255,255,0.4)] line-through">
-                    ${perfume.originalPrice}
-                  </span>
-                  <span className="text-[0.75rem] font-semibold text-[#4ade80]">
-                    You Save ${perfume.originalPrice - perfume.discountedPrice} (
-                    {Math.round(((perfume.originalPrice - perfume.discountedPrice) / perfume.originalPrice) * 100)}
-                    %)
-                  </span>
+                <a
+                  href={retailerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="pf-btn pf-btn--block mt-6"
+                >
+                  View at {coupon.retailer}
+                  <span className="sr-only"> (affiliate link, opens in a new tab)</span>
+                </a>
+
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-5">
+                  <p className="pf-meta">Affiliate link — we may earn a commission</p>
+                  <Link to={`/compare/${perfume.slug}`} className="pf-cta">
+                    Compare offers <span className="pf-arrow">→</span>
+                  </Link>
                 </div>
-
-                {/* COUPON CLICK ACTION: Sends Directly to Affiliate Link */}
-                <button type="button" onClick={handleClaimOffer} className="pf-btn pf-btn--block mt-6">
-                  <span>
-                    {copied
-                      ? "COUPON COPIED! REDIRECTING..."
-                      : `ACTIVATE COUPON & SHOP ON ${coupon.retailer.toUpperCase()} ↗`}
-                  </span>
-                </button>
-
-                <p className="mt-4 text-center text-[0.72rem] text-[rgba(255,255,255,0.45)]">
-                  Promo Code: <code className="font-bold text-gold">{coupon.code}</code> (Auto-applied at
-                  checkout)
-                </p>
               </div>
             )}
 
@@ -297,15 +263,11 @@ export default function PerfumeDetailRoute() {
               </div>
               <div className="pf-spec">
                 <span className="pf-spec__label">Longevity</span>
-                <span className="pf-spec__value">
-                  {perfume.longevity} / 10 (8-12 hrs)
-                </span>
+                <span className="pf-spec__value">{perfume.longevity} / 10 · editorial estimate</span>
               </div>
               <div className="pf-spec">
                 <span className="pf-spec__label">Sillage</span>
-                <span className="pf-spec__value">
-                  {perfume.sillage} / 10 (Moderate to Strong)
-                </span>
+                <span className="pf-spec__value">{perfume.sillage} / 10 · editorial estimate</span>
               </div>
               <div className="pf-spec">
                 <span className="pf-spec__label">Best Seasons</span>
@@ -423,26 +385,36 @@ export default function PerfumeDetailRoute() {
               </div>
             </div>
 
-            {/* Bottom Coupon CTA */}
+            {/* Closing link. The old copy here redeemed a code and promised
+                "guaranteed authentic stock with priority delivery" — a
+                guarantee about someone else's shipping that we cannot make. */}
             <div className="mt-16 border-t border-[rgba(255,255,255,0.08)] pt-12 text-center">
-              <h3 className="pf-h3 text-[1.75rem]">Ready to Experience {perfume.name}?</h3>
-              <p className="mt-3 text-[0.85rem] leading-relaxed text-[rgba(255,255,255,0.6)]">
-                Redeem code <strong className="text-gold">{coupon?.code}</strong> for{" "}
-                {coupon?.discount} at {coupon?.retailer}. Guaranteed authentic stock with priority
-                delivery.
+              <h3 className="pf-h3 text-[1.75rem]">Ready to experience {perfume.name}?</h3>
+              <p className="mx-auto mt-3 max-w-[520px] text-[0.85rem] leading-relaxed text-[rgba(255,255,255,0.6)]">
+                Check the current price and stock at {coupon?.retailer ?? "the retailer"}. We may earn a
+                commission if you buy through our link, at no extra cost to you.
               </p>
-              <button type="button" onClick={handleClaimOffer} className="pf-btn mt-7">
-                {copied
-                  ? "COUPON COPIED! OPENING STORE..."
-                  : `CLAIM ${coupon?.discount} AT ${coupon?.retailer.toUpperCase()}`}
-              </button>
+              <a
+                href={retailerUrl}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="pf-btn mt-7"
+              >
+                View at {coupon?.retailer ?? "the retailer"}
+                <span className="sr-only"> (affiliate link, opens in a new tab)</span>
+              </a>
             </div>
           </div>
         </section>
 
         <hr className="pf-rule" />
 
-        {/* ── 3. FREQUENTLY ASKED QUESTIONS (DSA Optimized) ── */}
+        {/* ── 3. FREQUENTLY ASKED QUESTIONS ──
+            Rewritten. The first two used to be a coupon-redemption walkthrough
+            for a code no retailer issues, and a flat "yes, 100% authentic"
+            guarantee. We do not handle or inspect what a retailer ships, so we
+            cannot make that promise for them — saying we did was the kind of
+            claim a reader has no way to check and no way to challenge. */}
         <section className="pf-section">
           <div className="mx-auto w-full max-w-[880px]">
             <h2 className="pf-h2">Frequently Asked Questions</h2>
@@ -450,19 +422,23 @@ export default function PerfumeDetailRoute() {
             <div className="mt-10">
               {[
                 {
-                  q: `How do I redeem the ${perfume.name} coupon code?`,
-                  a: `Simply click on any "Activate Coupon & Shop" button on this page. The code (${coupon?.code || "DEAL"}) will be automatically copied to your clipboard, and you will be taken directly to the authorized retailer (${coupon?.retailer}) checkout page where the discount will apply.`,
+                  q: `Where can I buy ${perfume.name}?`,
+                  a: `Not from us. PhiloFragrancy does not sell fragrance and never takes an order. The retailer link above takes you to ${
+                    coupon?.retailer ?? "the retailer"
+                  }'s own page, where their price, shipping and returns terms apply. We may earn a commission if you buy through that link, at no extra cost to you.`,
                 },
                 {
-                  q: `Are the perfumes sold through these links 100% authentic?`,
-                  a: `Yes. PhiloFragrancy only partners with authorized luxury fragrance retailers including FragranceNet, Sephora, Nordstrom, and official brand boutiques. We never feature unauthorized gray-market sellers or imitation replicas.`,
+                  q: `Can you vouch for the authenticity of what I receive?`,
+                  a: `No, and it would be worth being precise about why. We never handle the bottle, so we cannot inspect it — authenticity is the retailer's responsibility and their policy is the one that governs a claim. We list retailers; we do not grade or guarantee them. If authenticity matters to you, buy direct from the fragrance house.`,
                 },
                 {
                   q: `What is the best season and occasion to wear ${perfume.name}?`,
-                  a: `${perfume.name} performs exceptionally during ${perfume.season.join(", ")}. It is best suited for ${perfume.occasion.join(", ")}.`,
+                  a: `${perfume.name} is usually at its best in ${perfume.season.join(
+                    ", ",
+                  ).toLowerCase()}, and tends to suit ${perfume.occasion.join(", ").toLowerCase()}. Treat that as editorial judgement rather than a rule — skin chemistry and climate change everything.`,
                 },
-              ].map((item, idx) => (
-                <div key={idx} className="pf-row">
+              ].map((item) => (
+                <div key={item.q} className="pf-row">
                   <h3 className="text-base font-semibold text-white">{item.q}</h3>
                   <p className="mt-2 text-[0.85rem] leading-relaxed text-[rgba(255,255,255,0.6)]">
                     {item.a}

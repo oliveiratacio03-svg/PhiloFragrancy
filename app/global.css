@@ -537,4 +537,388 @@
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   Conversion surface
+   Additions for the search-first homepage: one search group, price rows, a
+   comparison table, three steps and a FAQ. Same constraints as the rest of the
+   system — flat, hairline, no radius, no elevation, gold only where it carries
+   meaning (a saving, the primary action).
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Hero search. One visible input group for one job: find a fragrance. */
+.pf-search {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border: 1px solid var(--pf-line-strong);
+  background: var(--pf-surface);
+  transition: border-color 0.2s ease;
+}
+
+.pf-search:focus-within {
+  border-color: rgba(212, 175, 55, 0.6);
+}
+
+.pf-search__field {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 1rem 1.15rem;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-family: var(--pf-sans);
+  font-size: 1rem;
+}
+
+.pf-search__field::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/* The field must not paint its own focus ring — the wrapper shows focus state
+   via :focus-within, and two rings at once reads as a rendering bug. */
+.pf-search__field:focus,
+.pf-search__field:focus-visible {
+  outline: none;
+}
+
+.pf-search__submit {
+  flex: none;
+  padding: 0 1.75rem;
+  background: var(--pf-gold-solid);
+  border: 0;
+  border-left: 1px solid var(--pf-gold-solid);
+  color: #070707;
+  font-family: var(--pf-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pf-search__submit:hover,
+.pf-search__submit:focus-visible {
+  background: #e0be75;
+}
+
+/* Popular-search chips. Deliberately inline rather than a floating suggestion
+   list: no overlay, no click-outside, and the same chips work as the empty
+   state of /search. */
+.pf-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.pf-suggest__chip {
+  padding: 0.35rem 0.7rem;
+  background: transparent;
+  border: 1px solid var(--pf-line);
+  color: var(--pf-muted);
+  font-family: var(--pf-sans);
+  font-size: 0.75rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.pf-suggest__chip:hover,
+.pf-suggest__chip:focus-visible {
+  color: #fff;
+  border-color: rgba(212, 175, 55, 0.5);
+}
+
+/* Deal card: one fragrance, every retailer we list for it, one way out. */
+.pf-deal {
+  display: flex;
+  flex-direction: column;
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-line);
+  transition: border-color 0.2s ease;
+}
+
+.pf-deal:hover,
+.pf-deal:focus-within {
+  border-color: rgba(212, 175, 55, 0.45);
+}
+
+.pf-deal__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+}
+
+/* Retailer price row. The retailer name is the small thing, the money is the
+   thing you came for, so the money carries the size. */
+.pf-deal__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--pf-line);
+}
+
+.pf-deal__row:last-of-type {
+  border-bottom: 0;
+}
+
+.pf-deal__retailer {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pf-faint);
+}
+
+.pf-deal__price {
+  font-size: 1rem;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.pf-deal__price s {
+  margin-left: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--pf-faint);
+}
+
+.pf-deal__unlisted {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--pf-faint);
+}
+
+/* Comparison table. Dense by design: comparison is the job, and a comparison
+   that hides a column to look calm has failed at it. Scrolls sideways on
+   narrow screens rather than collapsing into accordions, because the whole
+   point is that the columns sit next to each other. */
+.pf-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pf-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-family: var(--pf-sans);
+}
+
+.pf-table th {
+  padding: 0 1rem 0.9rem;
+  text-align: left;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pf-faint);
+  border-bottom: 1px solid var(--pf-line-strong);
+  white-space: nowrap;
+}
+
+.pf-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--pf-line);
+  font-size: 0.9rem;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.pf-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.pf-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pf-table td:first-child {
+  white-space: normal;
+  min-width: 200px;
+}
+
+.pf-save {
+  color: var(--pf-gold);
+  font-weight: 600;
+}
+
+/* Three steps. The number is large because it is the only thing to scan. */
+.pf-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--pf-line);
+  border: 1px solid var(--pf-line);
+}
+
+.pf-step {
+  background: var(--pf-surface);
+  padding: 2rem 1.5rem;
+}
+
+.pf-step__num {
+  font-family: var(--pf-display);
+  font-size: 3.25rem;
+  line-height: 1;
+  color: var(--pf-gold);
+  opacity: 0.55;
+}
+
+/* FAQ accordion. Height animates via the 0fr → 1fr grid trick so nothing has
+   to be measured in JavaScript, and the panel is removed from the tab order
+   and the a11y tree when closed rather than just being made transparent. */
+.pf-faq {
+  border-bottom: 1px solid var(--pf-line);
+}
+
+.pf-faq:first-of-type {
+  border-top: 1px solid var(--pf-line);
+}
+
+.pf-faq__btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  width: 100%;
+  padding: 1.35rem 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  color: #fff;
+  font-family: var(--pf-sans);
+  font-size: 0.98rem;
+  cursor: pointer;
+}
+
+.pf-faq__btn:hover {
+  color: var(--pf-gold);
+}
+
+/* Plus that becomes a minus by rotating 45°, not by swapping glyphs. */
+.pf-faq__sign {
+  flex: none;
+  color: var(--pf-gold);
+  font-size: 1.15rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.pf-faq__btn[aria-expanded="true"] .pf-faq__sign {
+  transform: rotate(45deg);
+}
+
+.pf-faq__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--ease-collapse, 200ms);
+}
+
+.pf-faq__panel[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+
+.pf-faq__panel > div {
+  overflow: hidden;
+}
+
+.pf-faq__answer {
+  padding-bottom: 1.5rem;
+  max-width: 68ch;
+  font-size: 0.92rem;
+  line-height: 1.75;
+  color: var(--pf-muted);
+}
+
+/* The sample-data marker. Not a badge for its own sake: it is the disclosure
+   that keeps a placeholder number from reading as a checked price. Sits in the
+   muted tier so it informs without competing with the price beside it. */
+.pf-sample {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pf-faint);
+}
+
+.pf-sample::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  background: var(--pf-faint);
+  transform: rotate(45deg);
+  flex: none;
+}
+
+/* Wishlist toggle — a local, per-device convenience, so localStorage and an
+   explicit pressed state rather than an implied one. */
+.pf-wish {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.85rem 1.25rem;
+  background: transparent;
+  border: 1px solid var(--pf-line-strong);
+  color: #fff;
+  font-family: var(--pf-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.pf-wish:hover,
+.pf-wish:focus-visible {
+  border-color: rgba(212, 175, 55, 0.5);
+  color: var(--pf-gold);
+}
+
+.pf-wish[aria-pressed="true"] {
+  border-color: var(--pf-gold);
+  color: var(--pf-gold);
+}
+
+/* Scroll reveal was specified and then cut on purpose. A fade that fires on
+   scroll is the most recognisable motion of a coupon aggregator, and the one
+   thing this brand should not borrow. Every animation left in the system is a
+   state change the reader caused: a hover, a disclosure, a price landing. */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .pf-card:hover .pf-card__media img,
+  .pf-arrow,
+  .pf-faq__sign {
+    transition: none;
+  }
+}
+
+/* Below the two-column reading width the step row stacks and the search button
+   stops shrinking away from its label. */
+@media (max-width: 767px) {
+  .pf-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-search {
+    flex-direction: column;
+  }
+
+  .pf-search__submit {
+    padding: 0.9rem 1rem;
+    border-left: 0;
+    border-top: 1px solid var(--pf-gold-solid);
+  }
+}
+
 } /* end @layer components */

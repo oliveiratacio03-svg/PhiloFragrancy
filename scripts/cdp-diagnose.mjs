@@ -13,6 +13,16 @@ const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const TARGET_URL = process.argv[2] || "http://localhost:5173/perfumes/creed-aventus";
 const PORT = 9333;
 const WAIT_MS = Number(process.argv[3] || 30000);
+/**
+ * `--login` completes the local developer sign-in before measuring.
+ *
+ * The dev server puts a login wall in front of every page, so a headless run
+ * without this lands on /sign-in and reports that instead of the page under
+ * test. The button only exists on localhost and only exists to make local
+ * development possible; clicking it is what a developer does manually before
+ * looking at anything.
+ */
+const DO_LOGIN = process.argv.includes("--login");
 
 const profile = mkdtempSync(join(tmpdir(), "cdp-"));
 const chrome = spawn(
@@ -90,6 +100,28 @@ const evaluate = async (expression) => {
   return r?.result?.value;
 };
 
+if (DO_LOGIN) {
+  const onSignIn = await evaluate(`location.pathname.startsWith('/sign-in')`);
+  if (onSignIn) {
+    const clicked = await evaluate(`(() => {
+      const btn = Array.from(document.querySelectorAll('button, a')).find((el) =>
+        /desenvolvedor local|developer local/i.test(el.textContent || ''),
+      );
+      if (!btn) return false;
+      btn.click();
+      return true;
+    })()`);
+
+    if (clicked) {
+      // The click sets a session cookie and reloads; then go back to the page
+      // under test, because the wall redirected away from it.
+      await sleep(6000);
+      await send("Page.navigate", { url: TARGET_URL });
+      await sleep(Math.max(WAIT_MS, 12000));
+    }
+  }
+}
+
 const report = {
   url: await evaluate("location.href"),
   title: await evaluate("document.title"),
@@ -100,6 +132,19 @@ const report = {
     `document.querySelector('[data-agent-native-loading-label]')?.textContent ?? '(sem loader-label)'`,
   ),
   bodyPreview: await evaluate("document.body.innerText.replace(/\\s+/g,' ').slice(0, 260)"),
+  /* The page's own outline. More useful than a hand-picked boolean when the
+     question is "did the route I just wrote actually render its content". */
+  headings: await evaluate(
+    `Array.from(document.querySelectorAll('h1, h2')).map(h => h.tagName + ': ' + h.textContent.trim().replace(/\\s+/g,' ')).slice(0, 22)`,
+  ),
+  /* Every internal destination the page links to. A route that 404s shows up
+     here as a href nothing serves. */
+  internalLinks: await evaluate(
+    `Array.from(new Set(Array.from(document.querySelectorAll('a[href]')).map(a => a.getAttribute('href')).filter(h => h && h.startsWith('/')))).slice(0, 40)`,
+  ),
+  externalLinks: await evaluate(
+    `document.querySelectorAll('a[target="_blank"]').length`,
+  ),
   hasReviewMarker: await evaluate("document.body.innerText.includes('Note breakdown')"),
   hasDraftBanner: await evaluate("document.body.innerText.includes('not published')"),
   hasLegacyMarker: await evaluate("document.body.innerText.includes('Olfactory Pyramid')"),
