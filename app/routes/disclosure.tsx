@@ -2,11 +2,11 @@ import { Link } from "react-router";
 
 export function meta() {
   return [
-    { title: "Affiliate Disclosure & Advertising Transparency — PhiloFragrancy" },
+    { title: "Affiliate Disclosure — PhiloFragrancy" },
     {
       name: "description",
       content:
-        "PhiloFragrancy affiliate disclosure, advertising ethics, and commercial relationship transparency in accordance with FTC guidelines and Google Ads standards.",
+        "PhiloFragrancy earns a commission from some retailer links at no cost to the reader. It does not change the price you pay, and it does not buy a position in a review.",
     },
   ];
 }
@@ -16,36 +16,61 @@ export default function DisclosureRoute() {
     <div className="w-full bg-[#070707] text-[#e5e5e7]">
       <section className="pf-section">
         <div className="pf-container-narrow">
-          <p className="pf-eyebrow">Transparency &amp; integrity</p>
+          <p className="pf-eyebrow">Transparency</p>
           <h1 className="pf-h1 mt-5 text-[clamp(2.4rem,5vw,3.4rem)]">Affiliate &amp; commercial disclosure</h1>
 
           <div className="pf-prose mt-10">
             <p>
-              In accordance with Federal Trade Commission (FTC) guidelines and Google Advertising Transparency
-              policies, PhiloFragrancy operates with full commercial disclosure across all published content.
+              PhiloFragrancy earns money when you buy something after following one of our
+              retailer links. It costs you nothing extra and it does not change the price you
+              pay. This page says exactly how that works, and — just as importantly — what we
+              do not claim.
             </p>
 
-            <h2>Affiliate relationships</h2>
+            <h2>What earns us money</h2>
             <p>
-              PhiloFragrancy is reader-supported. Some of the links featured on our website (including coupon code
-              buttons, deal links, and product packshot banners) are affiliate links. When you click these links and make
-              a purchase on a partner merchant&rsquo;s website, PhiloFragrancy may earn a referral commission at no
-              additional cost to you.
+              Retailer links on product pages, the offer cards and the comparison table. When
+              you follow one and complete a purchase, the retailer may pay us a commission. We
+              do not sell fragrance, we never take an order, and we hold no stock.
+            </p>
+            <p>
+              Every retailer link is marked as an affiliate link. You can see it in the
+              &ldquo;where to buy&rdquo; card on a product page, in the footer of every
+              comparison, and in the link&rsquo;s own URL.
             </p>
 
-            <h2>Editorial independence</h2>
+            <h2>What a commission does not buy</h2>
             <p>
-              Our editorial ratings, fragrance scores, longevity wear-test metrics, and fragrance reviews are 100%
-              independent. Retailers, manufacturers, and perfume brands do not pay for positive evaluations. If a
-              fragrance performs poorly in our testing or suffers from high dilution, we state so unequivocally in our
-              review.
+              It does not buy a position in a review, and it does not buy a rating — because
+              we do not publish ratings. There is no star score and no review count on any
+              page here, because we have no verified ratings to count. If a commission
+              influenced what we wrote about a fragrance, the honest response would be to
+              stop writing about it, not to add a disclaimer.
+            </p>
+            <p>
+              Editorial prose and commercial data are stored separately in our database. A
+              retailer price changing cannot alter a sentence in a review, and rewriting a
+              review cannot move a price.
             </p>
 
-            <h2>Pricing &amp; coupon accuracy</h2>
+            <h2>Prices on this site</h2>
             <p>
-              While our team verifies promotional codes and pricing daily with authorized distributors, prices and stock
-              availability fluctuate rapidly. We recommend confirming final discount totals at the merchant&rsquo;s
-              checkout before completing your transaction.
+              Where a price appears next to a retailer, it is labelled as example pricing
+              until a checked retailer feed replaces it. We do not run a daily price
+              verification process, and we do not claim to. The retailer sets the price at
+              their checkout, and their figure is the real one.
+            </p>
+            <p>
+              This page previously stated that our team verified promotional codes and pricing
+              daily with authorised distributors. No such process exists. A disclosure page
+              that misdescribes its own operation is worse than no disclosure page at all,
+              because it lends credibility to everything else on the site.
+            </p>
+
+            <h2>Discount codes</h2>
+            <p>
+              We do not issue discount codes, and we do not display any. If a code appears
+              anywhere on this site, treat it as a mistake and tell us.
             </p>
           </div>
 

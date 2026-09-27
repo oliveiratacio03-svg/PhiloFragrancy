@@ -84,7 +84,13 @@ function SectionHead({
 export default function HomeRoute() {
   const [activeTab, setActiveTab] = useState<FilterId>("all");
 
-  const reviews = [...PERFUMES].sort((a, b) => b.rating - a.rating).slice(0, 3);
+  /* Featured reviews follow the same three products as the offer cards, so the
+     two sections reinforce each other instead of pointing at four different
+     things. This used to sort by `rating` and take the top three — which meant
+     the homepage decided what to feature using a number nobody earned. */
+  const reviews = FEATURED_DEALS.map((deal) => PERFUMES.find((p) => p.slug === deal.slug)).filter(
+    (p): p is Perfume => Boolean(p),
+  );
   const filteredPerfumes = PERFUMES.filter((p) => matchesFilter(p, activeTab));
 
   return (
@@ -301,7 +307,11 @@ export default function HomeRoute() {
                   <p className="pf-meta min-w-0 flex-1">
                     {perfume.brand} · {perfume.concentration}
                   </p>
-                  <p className="pf-eyebrow whitespace-nowrap">{perfume.rating} / 5</p>
+                  {/* No star rating here either. This used to print
+                      `{rating} / 5` from the same invented numbers the product
+                      page used to show as "verified ratings" — 4.8 for Aventus,
+                      4.9 for Bleu, neither earned by anyone. The review text is
+                      the reason to click. */}
                 </div>
                 <h3 className="pf-h3 mt-3 text-[1.4rem]">{perfume.name}</h3>
                 <p className="pf-lede mt-4 line-clamp-4 flex-1 text-[0.95rem] italic">{perfume.expertVerdict}</p>

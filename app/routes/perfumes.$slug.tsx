@@ -191,11 +191,6 @@ export default function PerfumeDetailRoute() {
               )}
             </div>
 
-            {/* Quiet trust meta line */}
-            <p className="pf-meta mt-5 leading-relaxed">
-              100% Authentic Batch · Lab Tested &amp; Verified · Authorized Retail Partner · 30-Day
-              Buyer Guarantee
-            </p>
           </div>
 
           {/* Right: DSA Optimized Title, Specs, and Coupon CTA */}
@@ -207,11 +202,14 @@ export default function PerfumeDetailRoute() {
             {/* Targeted H1 for Google Ads DSA & Organic Intent */}
             <h1 className="pf-h1 mt-3 text-[clamp(2.4rem,4vw,3.6rem)]">{perfume.name}</h1>
 
-            {/* Rating & Social Proof */}
-            <div className="mt-5 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <span className="pf-eyebrow">{perfume.rating} / 5.0</span>
-              <span className="pf-meta">({perfume.reviewCount.toLocaleString()} verified ratings)</span>
-            </div>
+            {/* No star rating here.
+                This used to render `{rating} / 5.0` and
+                `{reviewCount} verified ratings` — 4.8 and 14,280 for Aventus,
+                neither of which came from anyone. A review count is the single
+                most-copied number on a product page precisely because readers
+                treat it as evidence, which is what makes inventing one a
+                deliberate mislead rather than a rounding error. The review below
+                is the substance; there is no star rating to put above it. */}
 
             {/* Editorial One-Liner */}
             <p className="pf-lede mt-6">{perfume.description}</p>

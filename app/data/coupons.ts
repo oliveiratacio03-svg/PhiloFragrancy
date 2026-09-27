@@ -1,3 +1,51 @@
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  EDITORIAL RULE FOR THIS FILE — read before editing any prose below
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * No one at PhiloFragrancy has sprayed these bottles. The house publishes no
+ * performance figures, and neither do we. So the review prose here may not
+ * claim first-hand experience of any kind — not "our testing room", not "our
+ * wear-tests", not "our panel found", not "in our experience". A stated
+ * measurement we did not make is a false statement about our own process, which
+ * is worse than a vague sentence, and when it is repeated as a Review entity in
+ * structured data it becomes a manual-action risk under Google's policy.
+ *
+ * What the prose IS allowed to do is describe the composition: the notes are
+ * public, the concentration and family are public, the year and perfumer are
+ * public. Performance can be discussed *qualitatively* and derived from the
+ * note pyramid, because that is chemistry rather than measurement — citrus and
+ * floral top notes are volatile and fade early, resins, woods and musks in the
+ * base are not. "The opening is the volatile part" is a true statement about
+ * the materials. "It lasted nine and a half hours" is not a statement we are
+ * entitled to make.
+ *
+ * Two things are therefore banned here as firmly as the first-hand claims:
+ *   - hours, or any other measured performance figure, stated as fact
+ *   - a number attributed to a named third party ("Fragrantica reports 12+ hrs")
+ *     that we have not actually read at a recorded date. Unsourced figures
+ *     laundered through someone else's name are still fabrications, and they are
+ *     worse, because now we have misrepresented a specific third party.
+ *
+ * `longevity` and `sillage` below are editorial estimates on a 1–10 scale, and
+ * the product page labels them as exactly that. They are not measurements.
+ *
+ * Pricing does not live in this file either. `originalPrice` and
+ * `discountedPrice` below are legacy: the UI no longer renders them, and the
+ * current retailer figures come from `deals.ts`, labelled as sample data until
+ * a checked feed replaces them. Do not put a price into prose.
+ *
+ * One loose end to be aware of: `server/lib/catalog/seed.ts` still reads these
+ * two fields and writes them into the `retailer_offers` table, so the database
+ * currently holds eight offers whose prices came from here rather than from a
+ * retailer. Nothing on the site reads those rows yet. If anyone points the
+ * comparison page at `retailer_offers`, those figures will surface as though
+ * they were checked — so seed the table from a real source, or leave it empty,
+ * before wiring anything to it.
+ *
+ * External review-site links are deliberately absent from the product page.
+ */
+
 export interface Perfume {
   id: string;
   slug: string;
@@ -11,10 +59,24 @@ export interface Perfume {
   heartNotes: string[];
   baseNotes: string[];
   description: string;
-  longevity: number; // 1-10
-  sillage: number; // 1-10
-  rating: number; // 1-5
-  reviewCount: number;
+  longevity: number; // 1-10, editorial estimate — not a measurement
+  sillage: number; // 1-10, editorial estimate — not a measurement
+  /**
+   * Legacy. 4.7–4.9 for every entry, and `reviewCount` in the thousands, none
+   * of it gathered from anyone. Nothing renders either field any more: not the
+   * product page, not the homepage, not the structured data. A review count is
+   * the number readers treat most as evidence, which is exactly why inventing
+   * one is a mislead rather than an error of taste.
+   *
+   * They are kept only so the shape of the record does not change, and so that
+   * if a real verified-review integration is ever added there is somewhere to
+   * put it. Do not reintroduce them into the UI, and do not treat them as a
+   * sorting signal — an earlier version of the homepage ranked its featured
+   * reviews by this number, which meant fabricated data was choosing what a
+   * visitor saw first.
+   */
+  rating: number; // unused — legacy
+  reviewCount: number; // unused — legacy
   imageGradient: string; // fallback CSS gradient
   season: string[];
   occasion: string[];
@@ -27,6 +89,21 @@ export interface Perfume {
   affiliateUrl: string;
 }
 
+/**
+ * Legacy. Retained only for the fields the UI still reads.
+ *
+ * `retailer` and `retailLink` are used by the product page's "where to buy"
+ * card, and that is the whole reason this array still exists.
+ *
+ * `code`, `discount`, `discountValue`, `minPurchase`, `usesLeft` and
+ * `expiresAt` are a fabrication that outlived its feature. None of these codes
+ * is issued by any retailer, and the "verified"/"guaranteed authentic" wording
+ * in `description` was never backed by a process. The coupon UI was removed
+ * precisely because a "reveal code" button that copies a string no retailer
+ * honours is a broken promise. Do not render these fields again, and do not
+ * repopulate them with real-looking placeholders — a code that does not work is
+ * worse than no code at all.
+ */
 export interface Coupon {
   id: string;
   perfumeId: string;
@@ -67,19 +144,19 @@ export const PERFUMES: Perfume[] = [
     originalPrice: 165,
     discountedPrice: 132,
     pros: [
-      "Universally acclaimed compliment puller",
-      "Exceptional versatility across all seasons and occasions",
-      "Smooth, high-grade incense and sandalwood drydown",
-      "Long-lasting 8-10 hour longevity with balanced projection"
+      "Widely considered the most versatile blue fragrance sold",
+      "Dry, resinous incense drydown rather than a sweet or powdery one",
+      "Layered structure: a bright opening over a woody base",
+      "Sits close enough to skin to wear in an office"
     ],
     cons: [
-      "Very popular, so it is not an ultra-niche or rare scent profile",
-      "Rarely discounted directly by Chanel (authorized retail deals only)"
+      "Very widely worn, so it is not a distinctive scent profile",
+      "Rarely discounted directly by Chanel — the offers listed here come from third-party retailers"
     ],
     expertVerdict:
-      "Bleu de Chanel Eau de Parfum remains the gold standard of modern blue fragrances. It strikes the elusive equilibrium between mass appeal and high-elegance Parisian craftsmanship. The citrus opening is crisp and natural, while the smoky incense and New Caledonian sandalwood lend depth that elevates it far above standard commercial scents.",
+      "Bleu de Chanel Eau de Parfum is the reference point for the modern blue fragrance. It balances mass appeal with Parisian craft, and the reason it wears as well as it does is structural: the citrus opening is loud for an hour, and everything after it is incense, vetiver and woods that stay close to the skin.",
     fullReview:
-      "Bleu de Chanel EDP is the benchmark blue fragrance for the discerning gentleman. Created by Chanel master perfumer Jacques Polge, it refines the crisp citrus-peppermint blast of the original EDT with deeper layers of amber resin and dry cedarwood. During testing, the projection radiates cleanly for the initial 2.5 hours before resting into a sophisticated, personal aura of incense and creamy sandalwood that lasts past 9 hours. Whether worn to an executive board meeting, an intimate anniversary dinner, or as an everyday signature, it radiates quiet confidence without shouting.",
+      "Bleu de Chanel EDP layers a bright citrus-and-mint opening over an incense drydown, which is the whole idea of the fragrance. Grapefruit, lemon and pink pepper are the most volatile notes in the pyramid and fade first; ginger, nutmeg and jasmine sit under them; incense, vetiver, cedar, sandalwood and patchouli make up the base and do most of the lasting. Because that base is resinous rather than sweet, the result reads dry and woody instead of heavy, and it is why the scent is usually described as season-spanning. Jacques Polge composed it, and the composition is closer to a classic fougère than the name suggests. Chanel does not publish performance figures and this review does not measure any — the current retailer offers are on the comparison page.",
     affiliateUrl: "https://www.fragrancenet.com/cologne/chanel/bleu-de-chanel/eau-de-parfum?coupon=BLEU20&utm_source=philofragrancy&utm_medium=affiliate",
   },
   {
@@ -105,19 +182,20 @@ export const PERFUMES: Perfume[] = [
     originalPrice: 495,
     discountedPrice: 371,
     pros: [
-      "The most iconic masculine niche fragrance of the 21st century",
-      "Unmatched juxtaposition of fruity pineapple and smoky birch",
-      "World-class natural ambergris base note with oceanic radiance",
-      "Incredible sillage that leaves an unforgettable signature trail"
+      "The pineapple-against-birch contrast is unusual in a release this well known",
+      "Strong, recognisable opening that reads clearly across a room",
+      "Ambergris and musk in the base give it staying power on skin",
+      "Widely available, so counterfeits are the main risk rather than supply"
     ],
     cons: [
-      "Premium luxury price tag",
-      "Batch variation debates among collector communities"
+      "Sits at the top of the designer-adjacent price tier",
+      "Very widely worn — the bottle in the room is usually recognisable",
+      "Batch variation is a recurring discussion among buyers of this release"
     ],
     expertVerdict:
-      "Aventus is more than a fragrance — it is a modern cultural phenomenon. No other scent has managed to balance juicy blackcurrant and charred birch with such regal authority. For those seeking unmatched presence and compliments, it remains an indispensable holy grail in niche perfumery.",
+      "Aventus has become a reference point rather than simply a good fragrance. What holds it up is the contrast at the centre of the pyramid — cold fruit over smoke — and the fact that the ambergris and musk in the base keep the whole thing sitting on skin instead of vanishing.",
     fullReview:
-      "First launched in 2010 to commemorate Creed's 250th anniversary, Aventus quickly redefined luxury masculine perfumery. The genius of the blend lies in its opening counterpoint: vibrant tart apple and luscious pineapple contrasted instantly against dark birch smoke. As it develops, the heart reveals tender French roses alongside earthy patchouli, melting gradually into Creed's legendary hand-selected ambergris accord. Our wear-tests yielded 9.5 hours of persistent longevity with commanding projection that never feels cloying.",
+      "Aventus was released in 2010 on a fruit-to-wood structure: pineapple, bergamot, blackcurrant leaves and apple open it, birch and patchouli carry the middle, and musk, oakmoss, ambergris and vanilla hold the drydown. The pineapple and bergamot are the volatile part and give way within the first hour or two; what remains recognisable at a distance is the birch, and that is the note the fragrance is bought for. Ambergris and musk in the base are why it lingers rather than disappearing. It is a niche-leaning release priced at the top of the designer tier, and the argument against it is mostly that the birch reads as more divisive than the fruit once the opening has passed. Creed does not publish performance figures and this review does not measure any — the retailer offers are on the comparison page.",
     affiliateUrl: "https://www.fragrancenet.com/cologne/creed/creed-aventus/eau-de-parfum?coupon=AVENTUS25&utm_source=philofragrancy&utm_medium=affiliate",
   },
   {
@@ -143,19 +221,19 @@ export const PERFUMES: Perfume[] = [
     originalPrice: 185,
     discountedPrice: 148,
     pros: [
-      "Richer, smoother, and less sharp than the EDT formulation",
-      "Beast-mode performance: lasts 12+ hours on skin and fabrics",
-      "Luxurious Sri Lankan sandalwood and warm vanilla drydown",
-      "Proven highest compliment-to-spray ratio"
+      "Heavier and rounder than the Sauvage EDT, with the sharp edges taken off",
+      "A base built on sandalwood, vanilla absolute and frankincense, which is what keeps it going",
+      "Reads as a finished scent rather than a fresh one from the first hour",
+      "Sits at a noticeably lower price than most of the niche tier"
     ],
     cons: [
-      "Can be overpowering if oversprayed (2-3 sprays maximum)",
-      "High density makes it too heavy for high-heat summer days"
+      "The density is too much for high heat — it flattens in summer",
+      "Easy to overspray; the base is not subtle about being there"
     ],
     expertVerdict:
-      "Sauvage Parfum refines the primal magnetism of the Sauvage lineage into an opulent, rounded extract. The shrill ambroxan edges of the original are smoothed over with luscious mandarin, smoky frankincense, and decadent vanilla absolute, resulting in a mature, seductive night-out weapon.",
+      "Sauvage Parfum is the version of the line worth buying. The EDT is a fresh fragrance that happens to last; the Parfum is a composed scent with a woody base, and that base is what makes it work past the first few hours.",
     fullReview:
-      "Dior's Sauvage Parfum elevates the beloved DNA into the realm of true olfactory luxury. From the first spritz, juicy Calabrian bergamot mingles with candied mandarin and resinous elemi. Within minutes, the composition warms on skin, revealing precious Sri Lankan sandalwood harvested in sustainable partnerships. The drydown is warm, smoldering, and enveloped in Tahitian vanilla. In our testing room, the scent survived 12 hours of wear, remaining detectable on collars for over 36 hours.",
+      "Sauvage Parfum is a higher concentrate of the Sauvage line, and the difference is mostly in the base. Bergamot, mandarin and elemi open it — all three are volatile, so the opening reads as brightness rather than depth — while Sri Lankan sandalwood and Virginia cedar form the body, and vanilla absolute, tonka bean and frankincense the base. That base is the reason it behaves like a Parfum rather than a stronger EDT: the materials are heavier, so it stays on skin rather than fading out. François Demachy composed it. Dior publishes no longevity figures and this review does not measure any; the sandalwood and vanilla in the base are the reason it is usually worn in the evening rather than through the day.",
     affiliateUrl: "https://www.fragrancenet.com/cologne/christian-dior/sauvage/parfum?coupon=SAUVAGE20&utm_source=philofragrancy&utm_medium=affiliate",
   },
   {
@@ -181,19 +259,19 @@ export const PERFUMES: Perfume[] = [
     originalPrice: 295,
     discountedPrice: 236,
     pros: [
-      "The undisputed benchmark of accessible westernized oud",
-      "Hypnotic blend of spicy cardamom and creamy sandalwood",
-      "Intimate and aristocratic sillage that draws people closer",
-      "Completely unisex with immense seductive appeal"
+      "A restrained reading of oud — a note in a composition rather than the whole thing",
+      "Cardamom and rosewood make the opening more approachable than the material usually is",
+      "Sandalwood in the middle keeps the drydown soft rather than leathery",
+      "Wearable in a way raw Middle Eastern oud is not"
     ],
     cons: [
-      "Moderate projection compared to raw Middle Eastern ouds",
-      "Luxury price per milliliter"
+      "Moderate projection compared to a true oud attar",
+      "Expensive per millilitre"
     ],
     expertVerdict:
-      "Tom Ford Private Blend Oud Wood is an architectural masterpiece of modern perfumery. It tames the feral qualities of agarwood into an impeccably tailored, smoky velvet tuxedo scent. An absolute staple for any serious fragrance wardrobe.",
+      "Oud Wood is the westernised oud, done carefully. It is not trying to imitate an attar — it uses oud as a texture underneath rosewood and sandalwood, which is what makes it wearable in a way the raw material is not.",
     fullReview:
-      "Oud Wood by Tom Ford redefined how the Western world perceives agarwood. Unlike pungent, animalic Middle Eastern attars, Tom Ford's interpretation is civilized, smooth, and laced with warming spices. The opening cardamom and Brazilian rosewood create an intoxicating invitation before the heart of smoky agarwood and creamy sandalwood takes center stage. On skin, it projects with refined subtlety — noticeable by anyone within arm's reach without ever dominating a room.",
+      "Oud Wood is Tom Ford's take on agarwood, and it is a restrained one: the oud is used as texture rather than as a statement. Cardamom and rosewood open it, Sichuan pepper and vetiver give the middle a dry heat, and tonka bean, vanilla and amber round the wood off in the base. Set against a Middle Eastern attar, where oud is the entire perfume, here it is one note among six, and that is the point — the sandalwood in the middle is doing much of the work of making the drydown soft. It reads as intimate rather than as a room-filler, and it is unisex in the way the woody-amber base allows. Tom Ford does not publish performance figures and this review does not measure any; the retailer offers are on the comparison page.",
     affiliateUrl: "https://www.fragrancenet.com/cologne/tom-ford/tom-ford-oud-wood/eau-de-parfum?coupon=TFOUD20&utm_source=philofragrancy&utm_medium=affiliate",
   },
   {
@@ -218,18 +296,18 @@ export const PERFUMES: Perfume[] = [
     originalPrice: 165,
     discountedPrice: 135,
     pros: [
-      "The most authentic comforting fireplace accord ever bottled",
-      "Addictive balance of roasted nuttiness and sweet vanilla smoke",
-      "Outstanding longevity for an Eau de Toilette formulation"
+      "Cade oil and guaiac wood do the smoke honestly rather than as an effect",
+      "Chestnut accord is roasted rather than sweet, which keeps it from tasting like dessert",
+      "Reads as a specific place and season rather than as a signature"
     ],
     cons: [
-      "Too warm and smoky for hot summer days",
-      "Very specific cozy mood"
+      "Too warm and smoky for hot weather",
+      "Affects how warmly a room reads — it is not a neutral scent"
     ],
     expertVerdict:
-      "By the Fireplace is atmospheric perfumery at its finest. It captures the comforting romance of crackling wood embers and marshmallow roasting over an alpine hearth.",
+      "By the Fireplace captures a memory rather than a mood: a wood fire, roasting chestnuts, cold outside. It is the strongest idea in the Replica line, and it works because the materials are the right ones for the job rather than approximations of them.",
     fullReview:
-      "Maison Margiela's Replica series excels at evoking emotional time capsules, and By the Fireplace is undeniably the line's greatest triumph. It delivers an uncannily accurate sensation of standing near a cedar wood fire while holding warm roasted chestnuts. The drydown softens the initial campfire smoke into a creamy, ambered vanilla that clings to wool coats and scarves for days.",
+      "By the Fireplace is built to smell like a wood fire, and the materials are the right ones for it: cade oil and guaiac wood give the smoke, chestnut accord gives the roasted nuttiness, clove oil and pink pepper the sharpness of flame. It is an Eau de Toilette, so the concentration is lower than the parfum versions of the same idea, and the orange blossom in the opening is among the first things to go. Cashmeran and Peru balsam in the base are what leave it sitting on wool rather than disappearing by lunchtime. It is a cold-weather scent in every sense of the word — less a signature than a temperature.",
     affiliateUrl: "https://www.sephora.com/product/replica-by-the-fireplace-P404758?coupon=REPLICA15&utm_source=philofragrancy&utm_medium=affiliate",
   },
   {
@@ -254,18 +332,18 @@ export const PERFUMES: Perfume[] = [
     originalPrice: 225,
     discountedPrice: 180,
     pros: [
-      "Unique sunny African marigold note unlike anything else",
-      "Effortlessly uplifting, clean, and radiant signature",
-      "True unisex appeal suitable for any warm weather day"
+      "African marigold is a note almost nothing else uses",
+      "Citrus and neroli on top of a woody base, so it reads sunny and still wears like a skin scent",
+      "Simple enough to wear every day, which is unusual for a niche release"
     ],
     cons: [
-      "Sits closer to skin after 4 hours",
-      "Subtle projection for those who prefer heavy beast-mode scents"
+      "The bright part fades early, leaving a quieter woody scent",
+      "Low projection for anyone who wants a fragrance to announce itself"
     ],
     expertVerdict:
-      "Bal d'Afrique is pure sunshine in a bottle. Ben Gorham's love letter to Paris and Africa radiates with sunny joy, clean musks, and earthy vetiver that never feels synthetic.",
+      "Bal d'Afrique is a fresh-woody formula executed without fuss. The marigold makes the opening distinctive and the vetiver and cedar in the base are what stop it being only a summer scent.",
     fullReview:
-      "Byredo's Bal d'Afrique is celebrated for its ability to smell both intoxicatingly unique and universally welcoming. The African marigold offers a tangy, sun-drenched sweetness that mingles effortlessly with Amalfi lemon and violet blossoms. As it dries, cedarwood and vetiver provide an earthy foundation that makes it wearable year-round.",
+      "Bal d'Afrique is a citrus-and-floral composition sitting on a woody base, and the African marigold in the opening is the part nobody forgets. Bergamot, lemon and neroli carry the brightness, violet and cyclamen soften the middle, and black amber, vetiver and Moroccan cedarwood give the drydown enough weight to work outside summer. Musk in the base is what makes it read as skin rather than as a fragrance worn on top of skin. Ben Gorham composed it, and the formula is a fairly conventional fresh-woody one — which is a large part of why it wears as easily as it does. Byredo does not publish performance figures and this review does not measure any.",
     affiliateUrl: "https://www.fragrancenet.com/perfume/byredo/byredo-bal-dafrique/eau-de-parfum?coupon=BYREDO20&utm_source=philofragrancy&utm_medium=affiliate",
   },
   {
@@ -290,18 +368,18 @@ export const PERFUMES: Perfume[] = [
     originalPrice: 350,
     discountedPrice: 280,
     pros: [
-      "Arguably the highest compliment-getter in modern niche perfumery",
-      "Delicious spiced vanilla and caramelized apple accord",
-      "Superb 10+ hour longevity with room-filling projection"
+      "Lavender and apple on top, vanilla and woods underneath — the fougère structure is legible",
+      "Guaiac wood with vanilla gives a barbershop-adjacent drydown rather than a plain sweet one",
+      "Widely available at the top of the niche tier"
     ],
     cons: [
-      "Heavy vanilla profile can be sweet for conservative office settings",
-      "Coveted niche bottle pricing"
+      "The vanilla is heavy enough to be too sweet for a conservative office",
+      "A crowded shelf — the barbershop-adjacent niche is full of similar things"
     ],
     expertVerdict:
-      "Layton is the king of mass-appealing niche scents. It takes the familiar spicy barbershop structure and infuses it with royalty-grade vanilla and spiced apple liqueur.",
+      "Layton is a well-executed sweet fragrance rather than an unusual one. The barbershop structure is familiar, but the guaiac wood in the base keeps it from being merely sugary, and that is what separates it from the rest of that shelf.",
     fullReview:
-      "Created by master perfumer Hamid Merati-Kashani, Layton opens with crisp green apple enveloped in calming French lavender. Within thirty minutes, cardamom and pink pepper add energetic spice before settling into a sumptuous base of Madagascar vanilla and creamy guaiac wood. It consistently ranks #1 in independent blind smell tests.",
+      "Layton is built on the fougère structure — lavender and apple on top, vanilla and woods underneath — and pushed toward sweetness. Bergamot, apple and lavender are the opening and the first to fade; jasmine, violet and geranium sit underneath; vanilla, black pepper, guaiac wood and patchouli make up the base, and it is the guaiac wood with vanilla that gives it a barbershop-adjacent drydown rather than a plain sweet one. The base is the heaviest part of the composition, which is why it is usually worn in cooler weather and why a light application goes a long way. Hamid Merati-Kashani composed it. Parfums de Marly does not publish performance figures and this review does not measure any — the retailer offers are on the comparison page.",
     affiliateUrl: "https://www.fragrancenet.com/cologne/parfums-de-marly/layton/eau-de-parfum?coupon=LAYTON20&utm_source=philofragrancy&utm_medium=affiliate",
   },
   {
@@ -326,18 +404,19 @@ export const PERFUMES: Perfume[] = [
     originalPrice: 395,
     discountedPrice: 295,
     pros: [
-      "The gold standard of luxury clean masculine florals",
-      "Silky orris and neroli accord that smells undeniably expensive",
-      "Omani royal craftsmanship with extreme longevity"
+      "White flowers on a woody base rather than a sweet or powdery one",
+      "The orris gives the middle a texture that reads expensive without reading sweet",
+      "Vetiver, cedar and sandalwood in the base make it work in cool weather",
+      "Bottled in a weight that justifies the shelf it sits on"
     ],
     cons: [
-      "Floral direction is distinctive and aristocratic, not sweet/fruity",
-      "Strict luxury price point"
+      "The floral direction is distinctive — not a substitute for a conventional blue or fresh scent",
+      "Expensive for what it is"
     ],
     expertVerdict:
-      "Reflection Man is the epitome of the gentleman scent. It smells like crisp white Italian linen, bespoke tailoring, and unshakeable inner peace.",
+      "Reflection Man is a floral for someone who does not think of themselves as wearing florals. The trick is the base: woody, not powdery, which keeps the neroli and orris from reading as soft.",
     fullReview:
-      "Amouage Reflection Man proves that masculine fragrances can embrace white flowers and powdery iris with supreme authority. Bitter orange leaves and red peppercorns provide a clean snap at the top, opening the door for neroli and Tuscan orris. The sandalwood and vetiver base is royal and unwavering, effortlessly sustaining 11 hours of performance.",
+      "Reflection Man is a floral fragrance built on a woody base, which is what separates it from the usual sweet or powdery ones. Bitter orange leaf and red pepper berries give the opening some snap, neroli, orris, jasmine and ylang-ylang are the middle, and vetiver, cedarwood, sandalwood and patchouli are the base. The orris is doing much of the work — it is what gives the centre a powdery texture without the sweetness that usually arrives with it. Amouage is an Omani house and this is one of its heavier compositions, with enough vetiver and sandalwood in the base to read as formal rather than casual. Amouage does not publish performance figures and this review does not measure any; the retailer offers are on the comparison page.",
     affiliateUrl: "https://www.fragrancenet.com/cologne/amouage/amouage-reflection/eau-de-parfum?coupon=AMOUAGE25&utm_source=philofragrancy&utm_medium=affiliate",
   },
 ];
@@ -364,7 +443,7 @@ export const COUPONS: Coupon[] = [
     code: "AVENTUS25",
     discount: "25% OFF",
     discountValue: 25,
-    description: "Get 25% off authentic Creed Aventus 100ml flacon — guaranteed original batch",
+    description: "Legacy copy. Not rendered anywhere.",
     expiresAt: "2026-12-31T23:59:59Z",
     isExclusive: true,
     isFeatured: true,
@@ -453,7 +532,7 @@ export const COUPONS: Coupon[] = [
     code: "AMOUAGE25",
     discount: "25% OFF",
     discountValue: 25,
-    description: "Save 25% on authentic Amouage Reflection Man 100ml flacon",
+    description: "Legacy copy. Not rendered anywhere.",
     expiresAt: "2026-11-30T23:59:59Z",
     isExclusive: true,
     isFeatured: false,
