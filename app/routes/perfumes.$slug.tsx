@@ -1,6 +1,8 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link, useParams } from "react-router";
+import { useActionQuery } from "@agent-native/core/client";
 import { PERFUMES, COUPONS } from "@/data/coupons";
+import { FragranceReview, type FragranceReviewData } from "@/components/review/FragranceReview";
 
 export function meta({ params }: { params: { slug: string } }) {
   const perfume = PERFUMES.find((p) => p.slug === params.slug);
@@ -45,6 +47,18 @@ export default function PerfumeDetailRoute() {
   const { slug } = useParams();
   const perfume = PERFUMES.find((p) => p.slug === slug);
   const [copied, setCopied] = useState(false);
+
+  /**
+   * The stored editorial review replaces the legacy inline copy when one exists.
+   * `includeDraft` lets an editor preview pipeline output in place — the
+   * renderer labels it as a draft, and there is no path that turns an
+   * unpublished review into published copy.
+   */
+  const { data: reviewData } = useActionQuery("get-fragrance-review", {
+    slug: slug ?? "",
+    includeDraft: true,
+  });
+  const hasStoredReview = Boolean(reviewData?.review);
 
   if (!perfume) {
     return (
@@ -109,7 +123,7 @@ export default function PerfumeDetailRoute() {
           "priceCurrency": "USD",
           "price": perfume.discountedPrice,
           "priceValidUntil": coupon?.expiresAt || "2026-12-31",
-          "itemCondition": "https://schema.org/NewCondition",
+          "itemCondition": "https://schema.org.NewCondition",
           "availability": "https://schema.org/InStock",
           "seller": {
             "@type": "Organization",
@@ -159,402 +173,167 @@ export default function PerfumeDetailRoute() {
   };
 
   return (
-    <div className="w-full bg-[#070707] text-[#e5e5e7] py-8">
+    <div className="w-full bg-[#070707] text-[#e5e5e7]">
       {/* Schema.org JSON-LD Script for Google Ads DSA & Rich Snippets */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 1.5rem" }}>
+      <div className="pf-container">
         {/* Breadcrumb Navigation */}
         <nav
           aria-label="Breadcrumb"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            fontSize: "0.75rem",
-            letterSpacing: "0.08em",
-            color: "rgba(255, 255, 255, 0.45)",
-            marginBottom: "2rem",
-          }}
+          className="pf-meta flex flex-wrap items-center gap-x-2 gap-y-1 py-8"
         >
-          <Link to="/" style={{ color: "rgba(255, 255, 255, 0.6)", textDecoration: "none" }}>
+          <Link to="/" className="pf-link">
             Home
           </Link>
-          <span>/</span>
-          <Link to="/#selection" style={{ color: "rgba(255, 255, 255, 0.6)", textDecoration: "none" }}>
+          <span aria-hidden="true">/</span>
+          <Link to="/#explore" className="pf-link">
             Fragrances
           </Link>
-          <span>/</span>
+          <span aria-hidden="true">/</span>
           <span>{perfume.brand}</span>
-          <span>/</span>
-          <span style={{ color: "#d4af37" }}>{perfume.name}</span>
+          <span aria-hidden="true">/</span>
+          <span className="pf-link--gold">{perfume.name}</span>
         </nav>
 
-        {/* ── TOP SECTION: Product Hero, Coupon Box & Affiliate CTA ── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "3.5rem",
-            alignItems: "start",
-            paddingBottom: "4rem",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-          }}
-        >
+        {/* ── TOP SECTION: Packshot, Title, Specs & Coupon CTA ── */}
+        <div className="grid gap-12 pb-14 md:grid-cols-2 lg:gap-16">
           {/* Left: Packshot Presentation in Clean Ivory Studio Frame */}
           <div>
-            <div
-              style={{
-                backgroundColor: "#ffffff",
-                borderRadius: "4px",
-                padding: "2.5rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                aspectRatio: "1 / 1.1",
-                position: "relative",
-                boxShadow: "0 12px 40px rgba(0, 0, 0, 0.6)",
-              }}
-            >
+            <div className="pf-frame aspect-[1/1.1]">
               {perfume.image ? (
                 <img
                   src={perfume.image}
                   alt={`${perfume.brand} ${perfume.name} luxury flacon`}
-                  style={{
-                    maxHeight: "100%",
-                    maxWidth: "100%",
-                    objectFit: "contain",
-                  }}
                 />
               ) : (
                 <div
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    background: perfume.imageGradient,
-                    borderRadius: "4px",
-                  }}
+                  className="h-full w-full"
+                  style={{ background: perfume.imageGradient }}
                 />
               )}
-
-              {/* Verified Authentic Badge */}
-              <div
-                style={{
-                  position: "absolute",
-                  top: "16px",
-                  left: "16px",
-                  backgroundColor: "#070707",
-                  color: "#d4af37",
-                  fontSize: "0.68rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  padding: "0.3rem 0.75rem",
-                  borderRadius: "2px",
-                }}
-              >
-                100% AUTHENTIC BATCH
-              </div>
             </div>
 
-            {/* Micro Trust Indicators below image */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginTop: "1.25rem",
-                fontSize: "0.72rem",
-                color: "rgba(255, 255, 255, 0.45)",
-                letterSpacing: "0.04em",
-              }}
-            >
-              <span>✓ Lab Tested & Verified</span>
-              <span>✓ Authorized Retail Partner</span>
-              <span>✓ 30-Day Buyer Guarantee</span>
-            </div>
+            {/* Quiet trust meta line */}
+            <p className="pf-meta mt-5 leading-relaxed">
+              100% Authentic Batch · Lab Tested &amp; Verified · Authorized Retail Partner · 30-Day
+              Buyer Guarantee
+            </p>
           </div>
 
           {/* Right: DSA Optimized Title, Specs, and Coupon CTA */}
           <div>
-            <div
-              style={{
-                fontSize: "0.75rem",
-                letterSpacing: "0.2em",
-                fontWeight: 600,
-                color: "#997b3d",
-                textTransform: "uppercase",
-                marginBottom: "0.5rem",
-              }}
-            >
+            <p className="pf-eyebrow">
               {perfume.brand} · {perfume.concentration}
-            </div>
+            </p>
 
             {/* Targeted H1 for Google Ads DSA & Organic Intent */}
-            <h1
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "clamp(2.4rem, 4vw, 3.6rem)",
-                lineHeight: 1.1,
-                fontWeight: 500,
-                color: "#ffffff",
-                margin: "0 0 1rem 0",
-              }}
-            >
-              {perfume.name}
-            </h1>
+            <h1 className="pf-h1 mt-3 text-[clamp(2.4rem,4vw,3.6rem)]">{perfume.name}</h1>
 
             {/* Rating & Social Proof */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "1rem",
-                marginBottom: "1.5rem",
-              }}
-            >
-              <div style={{ color: "#d4af37", fontSize: "0.95rem" }}>
-                {"★".repeat(Math.round(perfume.rating))}
-                {"☆".repeat(5 - Math.round(perfume.rating))}
-              </div>
-              <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#ffffff" }}>
-                {perfume.rating} / 5.0
-              </span>
-              <span style={{ fontSize: "0.8rem", color: "rgba(255, 255, 255, 0.45)" }}>
-                ({perfume.reviewCount.toLocaleString()} verified ratings)
-              </span>
+            <div className="mt-5 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+              <span className="pf-eyebrow">{perfume.rating} / 5.0</span>
+              <span className="pf-meta">({perfume.reviewCount.toLocaleString()} verified ratings)</span>
             </div>
 
             {/* Editorial One-Liner */}
-            <p
-              style={{
-                fontSize: "0.95rem",
-                color: "rgba(255, 255, 255, 0.7)",
-                lineHeight: 1.65,
-                marginBottom: "2rem",
-              }}
-            >
-              {perfume.description}
-            </p>
+            <p className="pf-lede mt-6">{perfume.description}</p>
 
             {/* ── THE AFFILIATE COUPON CARD (Direct Affiliate Redirection on Click) ── */}
             {coupon && (
-              <div
-                style={{
-                  backgroundColor: "#0d0d0f",
-                  border: "1px solid #d4af37",
-                  borderRadius: "4px",
-                  padding: "1.75rem",
-                  marginBottom: "2rem",
-                  position: "relative",
-                  boxShadow: "0 0 25px rgba(212, 175, 55, 0.15)",
-                }}
-              >
-                {/* Ribbon */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "0.68rem",
-                      letterSpacing: "0.14em",
-                      fontWeight: 700,
-                      color: "#070707",
-                      backgroundColor: "#c6a45c",
-                      padding: "0.2rem 0.6rem",
-                      borderRadius: "2px",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    VERIFIED TODAY · {daysLeft} DAYS LEFT
-                  </span>
-                  <span style={{ fontSize: "0.75rem", color: "rgba(255, 255, 255, 0.5)" }}>
-                    Store: <strong style={{ color: "#ffffff" }}>{coupon.retailer}</strong>
-                  </span>
+              <div className="pf-card mt-9 p-7">
+                {/* Quiet verification meta line */}
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <p className="pf-meta">Verified today · {daysLeft} days left</p>
+                  <p className="pf-meta">Store: {coupon.retailer}</p>
                 </div>
 
-                <div style={{ marginBottom: "1rem" }}>
-                  <div style={{ fontSize: "1.6rem", fontWeight: 700, color: "#d4af37" }}>
-                    {coupon.discount}
-                  </div>
-                  <div style={{ fontSize: "0.85rem", color: "#e5e5e7", marginTop: "0.25rem" }}>
-                    {coupon.description}
-                  </div>
-                </div>
+                <p className="mt-6 text-[1.6rem] font-semibold leading-none text-gold">
+                  {coupon.discount}
+                </p>
+                <p className="mt-3 text-[0.85rem] leading-relaxed text-[#e5e5e7]">
+                  {coupon.description}
+                </p>
 
                 {/* Price Display */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "baseline",
-                    gap: "0.75rem",
-                    marginBottom: "1.5rem",
-                    paddingBottom: "1rem",
-                    borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-                  }}
-                >
-                  <span style={{ fontSize: "1.75rem", fontWeight: 700, color: "#ffffff" }}>
-                    ${perfume.discountedPrice}
+                <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[rgba(255,255,255,0.08)] pb-5">
+                  <span className="text-[1.75rem] font-bold text-white">
+                    from ${perfume.discountedPrice}
                   </span>
-                  <span
-                    style={{
-                      fontSize: "1rem",
-                      textDecoration: "line-through",
-                      color: "rgba(255, 255, 255, 0.4)",
-                    }}
-                  >
+                  <span className="text-[1rem] text-[rgba(255,255,255,0.4)] line-through">
                     ${perfume.originalPrice}
                   </span>
-                  <span style={{ fontSize: "0.75rem", color: "#4ade80", fontWeight: 600 }}>
+                  <span className="text-[0.75rem] font-semibold text-[#4ade80]">
                     You Save ${perfume.originalPrice - perfume.discountedPrice} (
-                    {Math.round(((perfume.originalPrice - perfume.discountedPrice) / perfume.originalPrice) * 100)}%)
+                    {Math.round(((perfume.originalPrice - perfume.discountedPrice) / perfume.originalPrice) * 100)}
+                    %)
                   </span>
                 </div>
 
                 {/* COUPON CLICK ACTION: Sends Directly to Affiliate Link */}
-                <button
-                  onClick={handleClaimOffer}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.75rem",
-                    backgroundColor: "#c6a45c",
-                    color: "#070707",
-                    border: "none",
-                    padding: "1rem 1.5rem",
-                    borderRadius: "2px",
-                    fontFamily: "'Inter Variable', sans-serif",
-                    fontSize: "0.85rem",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    cursor: "pointer",
-                    transition: "all 0.25s ease",
-                    boxShadow: "0 4px 20px rgba(212, 175, 55, 0.35)",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#e0be75";
-                    (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#c6a45c";
-                    (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
-                  }}
-                >
-                  <span>{copied ? "COUPON COPIED! REDIRECTING..." : `ACTIVATE COUPON & SHOP ON ${coupon.retailer.toUpperCase()} ↗`}</span>
+                <button type="button" onClick={handleClaimOffer} className="pf-btn pf-btn--block mt-6">
+                  <span>
+                    {copied
+                      ? "COUPON COPIED! REDIRECTING..."
+                      : `ACTIVATE COUPON & SHOP ON ${coupon.retailer.toUpperCase()} ↗`}
+                  </span>
                 </button>
 
-                <div
-                  style={{
-                    fontSize: "0.72rem",
-                    color: "rgba(255, 255, 255, 0.45)",
-                    textAlign: "center",
-                    marginTop: "0.75rem",
-                  }}
-                >
-                  Promo Code: <code style={{ color: "#d4af37", fontWeight: 700 }}>{coupon.code}</code> (Auto-applied at checkout)
-                </div>
+                <p className="mt-4 text-center text-[0.72rem] text-[rgba(255,255,255,0.45)]">
+                  Promo Code: <code className="font-bold text-gold">{coupon.code}</code> (Auto-applied at
+                  checkout)
+                </p>
               </div>
             )}
 
-            {/* Quick Specs Grid */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: "1rem",
-                fontSize: "0.8rem",
-              }}
-            >
-              <div style={{ backgroundColor: "#111113", padding: "0.85rem", borderRadius: "2px" }}>
-                <span style={{ color: "rgba(255, 255, 255, 0.4)", display: "block" }}>Family</span>
-                <span style={{ fontWeight: 600, color: "#ffffff" }}>{perfume.family}</span>
+            {/* Quick Specs */}
+            <div className="mt-10">
+              <div className="pf-spec">
+                <span className="pf-spec__label">Family</span>
+                <span className="pf-spec__value">{perfume.family}</span>
               </div>
-              <div style={{ backgroundColor: "#111113", padding: "0.85rem", borderRadius: "2px" }}>
-                <span style={{ color: "rgba(255, 255, 255, 0.4)", display: "block" }}>Longevity</span>
-                <span style={{ fontWeight: 600, color: "#d4af37" }}>{perfume.longevity} / 10 (8-12 hrs)</span>
+              <div className="pf-spec">
+                <span className="pf-spec__label">Longevity</span>
+                <span className="pf-spec__value">
+                  {perfume.longevity} / 10 (8-12 hrs)
+                </span>
               </div>
-              <div style={{ backgroundColor: "#111113", padding: "0.85rem", borderRadius: "2px" }}>
-                <span style={{ color: "rgba(255, 255, 255, 0.4)", display: "block" }}>Sillage</span>
-                <span style={{ fontWeight: 600, color: "#ffffff" }}>{perfume.sillage} / 10 (Moderate to Strong)</span>
+              <div className="pf-spec">
+                <span className="pf-spec__label">Sillage</span>
+                <span className="pf-spec__value">
+                  {perfume.sillage} / 10 (Moderate to Strong)
+                </span>
               </div>
-              <div style={{ backgroundColor: "#111113", padding: "0.85rem", borderRadius: "2px" }}>
-                <span style={{ color: "rgba(255, 255, 255, 0.4)", display: "block" }}>Best Seasons</span>
-                <span style={{ fontWeight: 600, color: "#ffffff" }}>{perfume.season.join(", ")}</span>
+              <div className="pf-spec">
+                <span className="pf-spec__label">Best Seasons</span>
+                <span className="pf-spec__value">{perfume.season.join(", ")}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── 2. OLFACTORY PYRAMID SECTION ── */}
-        <section style={{ padding: "4rem 0", borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
-          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-            <div
-              style={{
-                fontSize: "0.68rem",
-                letterSpacing: "0.2em",
-                color: "#d4af37",
-                textTransform: "uppercase",
-                marginBottom: "0.5rem",
-              }}
-            >
-              SCENT ARCHITECTURE
-            </div>
-            <h2
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "2.4rem",
-                color: "#ffffff",
-                margin: 0,
-              }}
-            >
-              Olfactory Pyramid & Fragrance Notes
-            </h2>
-          </div>
+        <hr className="pf-rule" />
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: "2rem",
-            }}
-          >
+        {hasStoredReview ? (
+          <FragranceReview data={reviewData as FragranceReviewData} />
+        ) : (
+          <>
+        {/* ── 1. OLFACTORY PYRAMID SECTION ── */}
+        <section className="pf-section">
+          <p className="pf-eyebrow">Scent Architecture</p>
+          <h2 className="pf-h2 mt-3">Olfactory Pyramid &amp; Fragrance Notes</h2>
+
+          <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {/* Top Notes */}
-            <div
-              style={{
-                backgroundColor: "#0d0d0f",
-                padding: "2rem",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                borderRadius: "4px",
-              }}
-            >
-              <div style={{ fontSize: "0.7rem", letterSpacing: "0.14em", color: "#d4af37", textTransform: "uppercase" }}>
-                01 — OPENING (FIRST 15-30 MINS)
-              </div>
-              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.5rem", color: "#ffffff", margin: "0.5rem 0 1rem 0" }}>
-                Top Notes
-              </h3>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+            <div>
+              <h3 className="pf-h3">Top Notes</h3>
+              <p className="pf-meta mt-2">Opening · First 15–30 mins</p>
+              <div className="mt-5 flex flex-wrap gap-2">
                 {perfume.topNotes.map((note) => (
-                  <span
-                    key={note}
-                    style={{
-                      backgroundColor: "rgba(212, 175, 55, 0.1)",
-                      border: "1px solid rgba(212, 175, 55, 0.25)",
-                      color: "#f3e5ab",
-                      fontSize: "0.8rem",
-                      padding: "0.35rem 0.75rem",
-                      borderRadius: "2px",
-                    }}
-                  >
+                  <span key={note} className="pf-tag pf-tag--gold">
                     {note}
                   </span>
                 ))}
@@ -562,33 +341,12 @@ export default function PerfumeDetailRoute() {
             </div>
 
             {/* Heart Notes */}
-            <div
-              style={{
-                backgroundColor: "#0d0d0f",
-                padding: "2rem",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                borderRadius: "4px",
-              }}
-            >
-              <div style={{ fontSize: "0.7rem", letterSpacing: "0.14em", color: "#d4af37", textTransform: "uppercase" }}>
-                02 — THE HEART (HOURS 2-6)
-              </div>
-              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.5rem", color: "#ffffff", margin: "0.5rem 0 1rem 0" }}>
-                Heart Notes
-              </h3>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+            <div>
+              <h3 className="pf-h3">Heart Notes</h3>
+              <p className="pf-meta mt-2">The Heart · Hours 2–6</p>
+              <div className="mt-5 flex flex-wrap gap-2">
                 {perfume.heartNotes.map((note) => (
-                  <span
-                    key={note}
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.06)",
-                      border: "1px solid rgba(255, 255, 255, 0.15)",
-                      color: "#ffffff",
-                      fontSize: "0.8rem",
-                      padding: "0.35rem 0.75rem",
-                      borderRadius: "2px",
-                    }}
-                  >
+                  <span key={note} className="pf-tag">
                     {note}
                   </span>
                 ))}
@@ -596,33 +354,12 @@ export default function PerfumeDetailRoute() {
             </div>
 
             {/* Base Notes */}
-            <div
-              style={{
-                backgroundColor: "#0d0d0f",
-                padding: "2rem",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                borderRadius: "4px",
-              }}
-            >
-              <div style={{ fontSize: "0.7rem", letterSpacing: "0.14em", color: "#d4af37", textTransform: "uppercase" }}>
-                03 — DRYDOWN (HOURS 6-12+)
-              </div>
-              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.5rem", color: "#ffffff", margin: "0.5rem 0 1rem 0" }}>
-                Base Notes
-              </h3>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+            <div>
+              <h3 className="pf-h3">Base Notes</h3>
+              <p className="pf-meta mt-2">Drydown · Hours 6–12+</p>
+              <div className="mt-5 flex flex-wrap gap-2">
                 {perfume.baseNotes.map((note) => (
-                  <span
-                    key={note}
-                    style={{
-                      backgroundColor: "rgba(212, 175, 55, 0.1)",
-                      border: "1px solid rgba(212, 175, 55, 0.25)",
-                      color: "#f3e5ab",
-                      fontSize: "0.8rem",
-                      padding: "0.35rem 0.75rem",
-                      borderRadius: "2px",
-                    }}
-                  >
+                  <span key={note} className="pf-tag pf-tag--gold">
                     {note}
                   </span>
                 ))}
@@ -631,168 +368,86 @@ export default function PerfumeDetailRoute() {
           </div>
         </section>
 
-        {/* ── 3. IN-DEPTH EXPERT REVIEW & PROS/CONS (DSA HIGH QUALITY CONTENT) ── */}
-        <section style={{ padding: "4rem 0", borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
-          <div style={{ maxWidth: "880px", margin: "0 auto" }}>
-            <div
-              style={{
-                fontSize: "0.68rem",
-                letterSpacing: "0.2em",
-                color: "#d4af37",
-                textTransform: "uppercase",
-                marginBottom: "0.5rem",
-              }}
-            >
-              INDEPENDENT EDITORIAL EVALUATION
-            </div>
-            <h2
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "2.5rem",
-                color: "#ffffff",
-                marginBottom: "1.5rem",
-              }}
-            >
-              Master Perfumer's Comprehensive Verdict
-            </h2>
+        <hr className="pf-rule" />
 
-            {/* Verdict Box */}
-            <div
-              style={{
-                backgroundColor: "#111113",
-                borderLeft: "3px solid #d4af37",
-                padding: "1.5rem 1.75rem",
-                marginBottom: "2rem",
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "1.25rem",
-                fontStyle: "italic",
-                color: "#e5e5e7",
-                lineHeight: 1.6,
-              }}
-            >
-              "{perfume.expertVerdict}"
-            </div>
+        {/* ── 2. IN-DEPTH EXPERT REVIEW & PROS/CONS (DSA HIGH QUALITY CONTENT) ── */}
+        <section className="pf-section">
+          <div className="mx-auto w-full max-w-[880px]">
+            <p className="pf-eyebrow">Independent Editorial Evaluation</p>
+            <h2 className="pf-h2 mt-3">Master Perfumer&apos;s Comprehensive Verdict</h2>
+
+            {/* Verdict pull-quote — 3px gold left rule is identity, not ornament */}
+            <blockquote className="mt-10 border-l-[3px] border-l-[#d4af37] pl-6 font-serif-luxury text-[1.25rem] italic leading-relaxed text-[#e5e5e7]">
+              &ldquo;{perfume.expertVerdict}&rdquo;
+            </blockquote>
 
             {/* Full Detailed Body Review */}
-            <div
-              style={{
-                fontSize: "0.95rem",
-                color: "rgba(255, 255, 255, 0.75)",
-                lineHeight: 1.8,
-                marginBottom: "3rem",
-              }}
-            >
-              <p style={{ marginBottom: "1.5rem" }}>{perfume.fullReview}</p>
+            <div className="pf-prose mt-10">
+              <p>{perfume.fullReview}</p>
               <p>
-                When tested against ambient humidity and air-conditioned environments, {perfume.name} demonstrated impressive structural integrity. The balance between the buoyant opening accords and the anchoring base molecules ensures that wearer fatigue is minimized while retaining external projection for up to {perfume.longevity} hours.
+                When tested against ambient humidity and air-conditioned environments, {perfume.name}{" "}
+                demonstrated impressive structural integrity. The balance between the buoyant opening
+                accords and the anchoring base molecules ensures that wearer fatigue is minimized while
+                retaining external projection for up to {perfume.longevity} hours.
               </p>
             </div>
 
-            {/* Pros and Cons Grid */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                gap: "2rem",
-                marginBottom: "3rem",
-              }}
-            >
+            {/* Pros and Cons */}
+            <div className="mt-12 grid gap-8 sm:grid-cols-2">
               {/* Pros */}
-              <div
-                style={{
-                  backgroundColor: "#0d0d0f",
-                  padding: "1.75rem",
-                  border: "1px solid rgba(74, 222, 128, 0.2)",
-                  borderRadius: "4px",
-                }}
-              >
-                <h4 style={{ color: "#4ade80", fontSize: "0.85rem", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "1rem" }}>
-                  ✓ Reasons to Buy
-                </h4>
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              <div>
+                <h3 className="text-[0.85rem] font-semibold tracking-[0.1em] text-[#4ade80] uppercase">
+                  Reasons to Buy
+                </h3>
+                <ul className="m-0 mt-5 list-none space-y-3 p-0">
                   {perfume.pros.map((pro, i) => (
-                    <li key={i} style={{ fontSize: "0.85rem", color: "#e5e5e7", marginBottom: "0.75rem", display: "flex", gap: "0.5rem" }}>
-                      <span style={{ color: "#4ade80" }}>•</span> {pro}
+                    <li key={i} className="text-[0.85rem] leading-relaxed text-[#e5e5e7]">
+                      {pro}
                     </li>
                   ))}
                 </ul>
               </div>
 
               {/* Cons */}
-              <div
-                style={{
-                  backgroundColor: "#0d0d0f",
-                  padding: "1.75rem",
-                  border: "1px solid rgba(248, 113, 113, 0.2)",
-                  borderRadius: "4px",
-                }}
-              >
-                <h4 style={{ color: "#f87171", fontSize: "0.85rem", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "1rem" }}>
-                  ⚠ Considerations
-                </h4>
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              <div>
+                <h3 className="text-[0.85rem] font-semibold tracking-[0.1em] text-[#f87171] uppercase">
+                  Considerations
+                </h3>
+                <ul className="m-0 mt-5 list-none space-y-3 p-0">
                   {perfume.cons.map((con, i) => (
-                    <li key={i} style={{ fontSize: "0.85rem", color: "#e5e5e7", marginBottom: "0.75rem", display: "flex", gap: "0.5rem" }}>
-                      <span style={{ color: "#f87171" }}>•</span> {con}
+                    <li key={i} className="text-[0.85rem] leading-relaxed text-[#e5e5e7]">
+                      {con}
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
 
-            {/* Bottom Sticky Coupon CTA inside Article */}
-            <div
-              style={{
-                backgroundColor: "#161619",
-                border: "1px solid #d4af37",
-                borderRadius: "4px",
-                padding: "2rem",
-                textAlign: "center",
-              }}
-            >
-              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.75rem", color: "#ffffff", margin: "0 0 0.5rem 0" }}>
-                Ready to Experience {perfume.name}?
-              </h3>
-              <p style={{ fontSize: "0.85rem", color: "rgba(255, 255, 255, 0.6)", marginBottom: "1.5rem" }}>
-                Redeem code <strong style={{ color: "#d4af37" }}>{coupon?.code}</strong> for {coupon?.discount} at {coupon?.retailer}. Guaranteed authentic stock with priority delivery.
+            {/* Bottom Coupon CTA */}
+            <div className="mt-16 border-t border-[rgba(255,255,255,0.08)] pt-12 text-center">
+              <h3 className="pf-h3 text-[1.75rem]">Ready to Experience {perfume.name}?</h3>
+              <p className="mt-3 text-[0.85rem] leading-relaxed text-[rgba(255,255,255,0.6)]">
+                Redeem code <strong className="text-gold">{coupon?.code}</strong> for{" "}
+                {coupon?.discount} at {coupon?.retailer}. Guaranteed authentic stock with priority
+                delivery.
               </p>
-              <button
-                onClick={handleClaimOffer}
-                style={{
-                  backgroundColor: "#c6a45c",
-                  color: "#070707",
-                  border: "none",
-                  padding: "0.85rem 2.25rem",
-                  borderRadius: "2px",
-                  fontSize: "0.8rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                }}
-              >
-                {copied ? "COUPON COPIED! OPENING STORE..." : `CLAIM ${coupon?.discount} AT ${coupon?.retailer.toUpperCase()} ↗`}
+              <button type="button" onClick={handleClaimOffer} className="pf-btn mt-7">
+                {copied
+                  ? "COUPON COPIED! OPENING STORE..."
+                  : `CLAIM ${coupon?.discount} AT ${coupon?.retailer.toUpperCase()}`}
               </button>
             </div>
           </div>
         </section>
 
-        {/* ── 4. FREQUENTLY ASKED QUESTIONS (DSA Optimized) ── */}
-        <section style={{ padding: "4rem 0" }}>
-          <div style={{ maxWidth: "880px", margin: "0 auto" }}>
-            <h2
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "2.2rem",
-                color: "#ffffff",
-                marginBottom: "2rem",
-                textAlign: "center",
-              }}
-            >
-              Frequently Asked Questions
-            </h2>
+        <hr className="pf-rule" />
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        {/* ── 3. FREQUENTLY ASKED QUESTIONS (DSA Optimized) ── */}
+        <section className="pf-section">
+          <div className="mx-auto w-full max-w-[880px]">
+            <h2 className="pf-h2">Frequently Asked Questions</h2>
+
+            <div className="mt-10">
               {[
                 {
                   q: `How do I redeem the ${perfume.name} coupon code?`,
@@ -807,19 +462,9 @@ export default function PerfumeDetailRoute() {
                   a: `${perfume.name} performs exceptionally during ${perfume.season.join(", ")}. It is best suited for ${perfume.occasion.join(", ")}.`,
                 },
               ].map((item, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    backgroundColor: "#0d0d0f",
-                    padding: "1.5rem",
-                    border: "1px solid rgba(255, 255, 255, 0.08)",
-                    borderRadius: "4px",
-                  }}
-                >
-                  <h4 style={{ fontSize: "1rem", fontWeight: 600, color: "#ffffff", marginBottom: "0.5rem" }}>
-                    {item.q}
-                  </h4>
-                  <p style={{ fontSize: "0.85rem", color: "rgba(255, 255, 255, 0.6)", lineHeight: 1.6, margin: 0 }}>
+                <div key={idx} className="pf-row">
+                  <h3 className="text-base font-semibold text-white">{item.q}</h3>
+                  <p className="mt-2 text-[0.85rem] leading-relaxed text-[rgba(255,255,255,0.6)]">
                     {item.a}
                   </p>
                 </div>
@@ -827,6 +472,8 @@ export default function PerfumeDetailRoute() {
             </div>
           </div>
         </section>
+          </>
+        )}
       </div>
     </div>
   );

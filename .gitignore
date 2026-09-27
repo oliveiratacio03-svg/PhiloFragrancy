@@ -48,3 +48,6 @@ learnings.md
 .vercel/
 .agent-native/
 data/*.lock
+
+# Diagnostic backups (not part of the app)
+*.bak-before-*

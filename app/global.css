@@ -38,6 +38,18 @@
   --dark-surface: #0f0f10;
   --ivory-bg: #f6f3eb;
   --ivory-text: #1a1a1c;
+
+  /* Minimal editorial system — same palette, ornament removed */
+  --pf-surface: #0b0b0c;
+  --pf-line: rgba(255, 255, 255, 0.1);
+  --pf-line-strong: rgba(255, 255, 255, 0.2);
+  --pf-muted: rgba(255, 255, 255, 0.62);
+  --pf-faint: rgba(255, 255, 255, 0.5);
+  --pf-gold: #d4af37;
+  --pf-gold-solid: #c6a45c;
+  --pf-ivory: #f5f2eb;
+  --pf-display: "Cormorant Garamond", Georgia, serif;
+  --pf-sans: "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 @layer base {
@@ -60,6 +72,13 @@
   }
 }
 
+/* Everything below is app-owned component CSS. It is declared in
+   @layer components so Tailwind utilities — which sit in the later
+   `utilities` layer — can still override any single property. Without the
+   layer these rules would be unlayered and would silently beat every
+   utility class used alongside them. */
+@layer components {
+
 /* Luxury gold text & italic gold accents */
 .font-serif-luxury {
   font-family: "Cormorant Garamond", Georgia, serif;
@@ -79,31 +98,443 @@
   color: #d4af37;
 }
 
-/* Subtle glow effects */
-.gold-glow {
-  box-shadow: 0 0 30px rgba(212, 175, 55, 0.22);
+/* ─────────────────────────────────────────────────────────────
+   Minimal editorial system
+   Flat surfaces, hairline rules, one accent, no glow or shadow.
+   Colors and type come from the tokens above — nothing re-derived.
+   ───────────────────────────────────────────────────────────── */
+
+.pf-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  width: 100%;
 }
 
-.gold-glow-sm {
-  box-shadow: 0 0 16px rgba(212, 175, 55, 0.15);
+.pf-container-narrow {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  width: 100%;
 }
 
-.card-hover-luxury {
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+.pf-section {
+  padding: clamp(3rem, 6vw, 5rem) 0;
 }
 
-.card-hover-luxury:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.15);
+.pf-rule {
+  height: 1px;
+  background: var(--pf-line);
+  border: 0;
 }
 
-/* Editorial line dividers */
+/* Type scale */
+.pf-eyebrow {
+  font-family: var(--pf-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pf-gold);
+}
+
+.pf-eyebrow--muted {
+  color: var(--pf-faint);
+}
+
+.pf-h1 {
+  font-family: var(--pf-display);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: #fff;
+  margin: 0;
+}
+
+.pf-h2 {
+  font-family: var(--pf-display);
+  font-size: clamp(2.1rem, 4vw, 3.1rem);
+  font-weight: 400;
+  line-height: 1.1;
+  color: #fff;
+  margin: 0;
+}
+
+.pf-h3 {
+  font-family: var(--pf-display);
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #fff;
+  margin: 0;
+}
+
+.pf-lede {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--pf-muted);
+  margin: 0;
+}
+
+.pf-meta {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pf-faint);
+}
+
+/* Surfaces: flat, hairline border, no radius, no elevation.
+   The card is a flex column so the body fills whatever the media leaves over.
+   Never put `height` on the body: a percentage would resolve against the whole
+   card, not the space below the image, and the content would spill past the
+   border into the next section. */
+.pf-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-line);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.pf-card:hover,
+.pf-card:focus-visible {
+  border-color: rgba(212, 175, 55, 0.45);
+}
+
+.pf-card__media {
+  flex: none;
+  background: #fff;
+  overflow: hidden;
+  position: relative;
+}
+
+.pf-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.5s ease;
+}
+
+.pf-card:hover .pf-card__media img {
+  transform: scale(1.02);
+}
+
+.pf-card__body {
+  flex: 1 1 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* White studio frame for product packshots */
+.pf-frame {
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem;
+}
+
+.pf-frame img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Actions: one solid primary, one quiet ghost */
+.pf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 2rem;
+  background: var(--pf-gold-solid);
+  color: #070707;
+  font-family: var(--pf-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid var(--pf-gold-solid);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.pf-btn:hover,
+.pf-btn:focus-visible {
+  background: #e0be75;
+  border-color: #e0be75;
+}
+
+.pf-btn--ghost {
+  background: transparent;
+  color: #fff;
+  border-color: var(--pf-line-strong);
+}
+
+.pf-btn--ghost:hover,
+.pf-btn--ghost:focus-visible {
+  background: transparent;
+  border-color: var(--pf-gold);
+  color: var(--pf-gold);
+}
+
+.pf-btn--block {
+  width: 100%;
+}
+
+.pf-link {
+  color: #fff;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.pf-link:hover,
+.pf-link:focus-visible {
+  color: var(--pf-gold);
+  border-bottom-color: rgba(212, 175, 55, 0.5);
+}
+
+.pf-link--gold {
+  color: var(--pf-gold);
+}
+
+/* Filters: text only, active state is a single underline */
+.pf-filter {
+  padding: 0.4rem 0;
+  margin-right: 1.75rem;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  font-family: var(--pf-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--pf-faint);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.pf-filter:hover {
+  color: #fff;
+}
+
+.pf-filter[aria-pressed="true"] {
+  color: var(--pf-gold);
+  border-bottom-color: var(--pf-gold);
+}
+
+/* Flat outlined chip — notes, families, small data points */
+.pf-tag {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--pf-line);
+  font-size: 0.72rem;
+  color: var(--pf-muted);
+  white-space: nowrap;
+}
+
+.pf-tag--gold {
+  border-color: rgba(212, 175, 55, 0.3);
+  color: #f3e5ab;
+}
+
+/* Spec rows: label + value separated by a hairline, no boxes */
+.pf-spec {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--pf-line);
+  font-size: 0.85rem;
+}
+
+.pf-spec__label {
+  color: var(--pf-faint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.pf-spec__value {
+  color: #fff;
+  text-align: right;
+}
+
+/* Long-form prose */
+.pf-prose {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.pf-prose p {
+  margin: 0 0 1.5rem;
+}
+
+.pf-prose h2 {
+  font-family: var(--pf-display);
+  font-size: 1.85rem;
+  font-weight: 400;
+  color: #fff;
+  margin: 3rem 0 1rem;
+}
+
+.pf-prose ul {
+  margin: 0 0 2rem;
+  padding-left: 1.1rem;
+}
+
+.pf-prose li {
+  margin-bottom: 0.85rem;
+}
+
+.pf-prose strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* FAQ / list items: hairline separated, flat */
+.pf-row {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--pf-line);
+}
+
+.pf-row:first-child {
+  border-top: 1px solid var(--pf-line);
+}
+
+/* Navigation */
+.pf-navlink {
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  color: var(--pf-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.pf-navlink:hover,
+.pf-navlink:focus-visible {
+  color: var(--pf-gold);
+}
+
+/* Arrow that moves on hover — the only motion in the system */
+.pf-arrow {
+  display: inline-block;
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.pf-group:hover .pf-arrow,
+.pf-group:focus-visible .pf-arrow {
+  transform: translateX(4px);
+  color: var(--pf-gold);
+}
+
+/* Text CTA used inside cards — never a filled button */
+.pf-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pf-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.pf-cta:hover,
+.pf-cta:focus-visible,
+.pf-group:hover .pf-cta {
+  color: var(--pf-gold);
+}
+
+/* Offer row: retailer + price + link, separated by a hairline */
+.pf-offer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--pf-line);
+}
+
+.pf-offer:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.pf-offer__retailer {
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pf-muted);
+}
+
+.pf-offer__price {
+  font-size: 0.95rem;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.pf-offer__price s {
+  margin-left: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--pf-faint);
+}
+
+/* Comparison card — one fragrance and its available retailer offers */
+.pf-compare {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-line);
+  transition: border-color 0.2s ease;
+}
+
+.pf-compare:hover {
+  border-color: rgba(212, 175, 55, 0.45);
+}
+
+/* Neutral packshot placeholder, used when a product has no photo yet.
+   Same white frame and aspect ratio as a real packshot, so the grid never
+   breaks and the gap reads as intentional rather than as a colour block. */
+.pf-packshot-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.pf-packshot-empty__brand {
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+
+.pf-packshot-empty__name {
+  font-family: var(--pf-display);
+  font-size: 1.15rem;
+  line-height: 1.2;
+  color: #52525b;
+}
+
+/* Editorial divider kept for compatibility */
 .editorial-divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
 }
 
-.editorial-divider-gold {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.35), transparent);
-}
+} /* end @layer components */

@@ -38,14 +38,48 @@ visual direction — read and preserve them on every subsequent build; do not
 re-derive a new direction. The first UI pass must fill these fields in as
 part of that build, not leave them as an empty template.
 
-- Product mode: `operate` | `read` | `persuade` | `experience`
-- Audience and cadence:
-- Visual world (name + the feeling it creates):
-- Palette family + neutral undertone:
-- Type treatment:
-- Composition:
-- Shape language:
-- Anti-references (defaults this app must not drift toward):
+- Product mode: `persuade`
+- Audience and cadence: fragrance collectors and first-time luxury buyers, arriving
+  from search or ads to check a coupon code or read one honest wear-test. They read a
+  page, compare a price, and click out to a retailer.
+- Visual world (name + the feeling it creates): *dark editorial still-life* — a
+  near-black room, one antique-gold light source, a single piece of artwork per
+  screen. Quiet, confident, unhurried; the opposite of a coupon-blog bargain bin.
+- Palette family + neutral undertone: warm-neutral dark ground (`#070707`, surfaces
+  `#0b0b0c`) with a single antique-gold accent (`#d4af37`, solid `#c6a45c`) and one
+  ivory counterpoint band (`#f5f2eb`). Neutrals carry a slight warm cast; nothing is
+  a pure grey-blue.
+- Type treatment: Cormorant Garamond for all display and headings (large, light,
+  generous leading); the wordmark is uppercase with wide tracking and its second half
+  in gold italic. Inter for labels, meta, and controls — small, uppercase, tracked
+  `0.14em–0.2em`. Prose is Inter at 1rem/1.8.
+- Composition: one full-bleed artwork hero, then wide `1320px` containers (prose
+  narrows to `760px`) on a single vertical rhythm. Sections separate with `1px`
+  hairlines instead of boxes. Link lists are hairline rows, not cards.
+- Shape language: square corners everywhere, no radii, no drop shadows, no glow.
+  Depth comes from spacing and hairline borders only.
+- Anti-references (defaults this app must not drift toward): gold `box-shadow` glow,
+  elevated or floating cards, rounded pill chips, decorative SVG or emoji icons
+  (`★ ⚠ ✓ •`), numbered section eyebrows (`01 —`), a repeated CTA inside every card,
+  and multi-layer gradient vignettes over the hero artwork.
+
+## Change log
+
+- **Homepage clarity pass (2026-09-25):** section order and messaging reworked for
+  discovery → offers → comparison, without touching the visual language. Added
+  `Compare before you buy`, `Featured editorial reviews`, and a reworded
+  `How we evaluate fragrances` that makes no personal-testing claim. Card
+  hierarchy is now fragrance-first, offer-second. Product copy, prices, discounts
+  and offers are read only from `app/data/coupons.ts` through the `offersFor`,
+  `couponFor` and `tagsFor` mappers in `app/routes/_index.tsx` — swap those for
+  database queries when the catalog moves server-side. Products without
+  photography render a neutral `pf-packshot-empty` placeholder instead of a
+  colour block.
+- **Minimalist pass (2026-09-25):** ornament removed site-wide — glow, shadows,
+  radii, decorative icons, section numbering, and per-card CTAs. Palette, artwork,
+  wordmark, and type choices are unchanged. The shared `.pf-*` classes in
+  `app/global.css` are the surface for this system; new UI should use them instead
+  of inline style objects.
 
 ## Agent-native is structural, not visual
 

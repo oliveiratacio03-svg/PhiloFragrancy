@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router";
 
 const NAV_LINKS = [
-  { href: "/#selection", label: "COUPONS" },
+  { href: "/#explore", label: "FRAGRANCES" },
+  { href: "/#compare", label: "COUPONS" },
   { href: "/#reviews", label: "REVIEWS" },
-  { href: "/#discover", label: "COMPARISONS" },
+  { href: "/#compare", label: "COMPARISONS" },
   { href: "/about", label: "ABOUT" },
 ];
 
@@ -25,300 +26,101 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#070707] text-[#e5e5e7]">
-      {/* ── Minimalist Luxury Header (as in original reference) ── */}
       <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
-          transition: "all 0.3s ease",
-          borderBottom: scrolled
-            ? "1px solid rgba(255, 255, 255, 0.08)"
-            : "1px solid transparent",
-          backdropFilter: scrolled ? "blur(20px)" : "none",
-          backgroundColor: scrolled ? "rgba(7, 7, 7, 0.88)" : "transparent",
-        }}
+        className={`sticky top-0 z-50 transition-colors duration-300 ${
+          scrolled ? "border-b border-white/10 bg-[#070707]/90 backdrop-blur-xl" : "border-b border-transparent"
+        }`}
       >
-        <div
-          style={{
-            maxWidth: "1320px",
-            margin: "0 auto",
-            padding: "0 2rem",
-            height: "72px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          {/* Logo / Brand Name */}
-          <Link
-            to="/"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.6rem",
-              textDecoration: "none",
-            }}
-          >
+        <div className="pf-container flex h-[72px] items-center justify-between">
+          <Link to="/" className="flex items-center" aria-label="PhiloFragrancy home">
             <span
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "1.25rem",
-                fontWeight: 600,
-                letterSpacing: "0.14em",
-                color: "#f3f3f3",
-                textTransform: "uppercase",
-              }}
+              className="text-[1.25rem] font-semibold uppercase text-[#f3f3f3]"
+              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.14em" }}
             >
-              PHILO<span style={{ color: "#d4af37", fontStyle: "italic", marginLeft: "2px" }}>FRAGRANCY</span>
+              Philo<span className="ml-[2px] italic text-[#d4af37]">fragrance</span>
             </span>
           </Link>
 
-          {/* Desktop Nav Links: COUPONS, REVIEWS, COMPARISONS, ABOUT */}
-          <nav
-            aria-label="Primary"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "2.25rem",
-            }}
-            className="hidden md:flex"
-          >
+          <nav aria-label="Primary" className="hidden items-center gap-9 md:flex">
             {NAV_LINKS.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                style={{
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.16em",
-                  fontWeight: 500,
-                  textDecoration: "none",
-                  color: "rgba(255, 255, 255, 0.65)",
-                  transition: "color 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.color = "#d4af37";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255, 255, 255, 0.65)";
-                }}
-              >
+              <a key={link.label} href={link.href} className="pf-navlink">
                 {link.label}
               </a>
             ))}
           </nav>
 
-          {/* Right Action: EXPLORE ↗ */}
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <a
-              href="/#selection"
-              style={{
-                fontSize: "0.75rem",
-                letterSpacing: "0.16em",
-                fontWeight: 600,
-                textDecoration: "none",
-                color: "#d4af37",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.35rem",
-                transition: "opacity 0.2s ease, transform 0.2s ease",
-              }}
-              className="hidden sm:inline-flex"
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.opacity = "0.85";
-                (e.currentTarget as HTMLAnchorElement).style.transform = "translateX(2px)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.opacity = "1";
-                (e.currentTarget as HTMLAnchorElement).style.transform = "translateX(0)";
-              }}
-            >
-              EXPLORE ↗
-            </a>
-
-            {/* Mobile Hamburger */}
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Toggle menu"
-              className="flex md:hidden"
-              style={{
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: "4px",
-                width: "36px",
-                height: "36px",
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                padding: 0,
-              }}
-            >
-              {[0, 1, 2].map((i) => (
-                <span
-                  key={i}
-                  style={{
-                    display: "block",
-                    width: "20px",
-                    height: "1.5px",
-                    backgroundColor: "#e5e5e7",
-                    borderRadius: "1px",
-                    transition: "all 0.25s ease",
-                  }}
-                />
-              ))}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setMobileOpen((open) => !open)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            className="flex h-9 w-9 flex-col items-center justify-center gap-1 border-0 bg-transparent p-0 md:hidden"
+          >
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className="block h-px w-5 bg-[#e5e5e7]"
+                style={{
+                  transform: mobileOpen && i === 0 ? "translateY(5.5px) rotate(45deg)" : undefined,
+                  opacity: mobileOpen && i === 1 ? 0 : 1,
+                  transformOrigin: "center",
+                  transition: "transform 0.25s ease, opacity 0.2s ease",
+                }}
+              />
+            ))}
+          </button>
         </div>
 
-        {/* Mobile Navigation Dropdown */}
         {mobileOpen && (
-          <div
-            style={{
-              borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-              padding: "1.25rem 2rem",
-              background: "#070707",
-            }}
-          >
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                style={{
-                  display: "block",
-                  padding: "0.75rem 0",
-                  fontSize: "0.875rem",
-                  letterSpacing: "0.12em",
-                  color: "#e5e5e7",
-                  textDecoration: "none",
-                  borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
-                }}
-                onClick={() => setMobileOpen(false)}
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
+          <nav aria-label="Mobile" className="border-t border-white/10 bg-[#070707] md:hidden">
+            <div className="pf-container flex flex-col py-2">
+              {NAV_LINKS.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="border-b border-white/5 py-4 text-[0.8rem] tracking-[0.14em] text-[#e5e5e7] no-underline last:border-0"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </nav>
         )}
       </header>
 
-      {/* ── Main Content ── */}
-      <main style={{ flex: 1, minWidth: 0 }}>
-        {children}
-      </main>
+      <main style={{ flex: 1, minWidth: 0 }}>{children}</main>
 
-      {/* ── Luxury Minimalist Footer (Exact match to original reference) ── */}
-      <footer
-        style={{
-          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-          padding: "3.5rem 2rem 2.5rem 2rem",
-          backgroundColor: "#050505",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1320px",
-            margin: "0 auto",
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "2rem",
-          }}
-        >
-          {/* Left: A FRAGRANCE GUIDE / PHILOFRAGRANCY */}
-          <div>
-            <div
-              style={{
-                fontSize: "0.65rem",
-                letterSpacing: "0.22em",
-                color: "rgba(255, 255, 255, 0.4)",
-                marginBottom: "0.35rem",
-                textTransform: "uppercase",
-              }}
-            >
-              A FRAGRANCE GUIDE
-            </div>
-            <Link
-              to="/"
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "1.25rem",
-                letterSpacing: "0.14em",
-                fontWeight: 600,
-                color: "#d4af37",
-                textDecoration: "none",
-              }}
-            >
-              PHILOFRAGRANCY
-            </Link>
-          </div>
-
-          {/* Center Links */}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "1.75rem",
-              alignItems: "center",
-            }}
-          >
-            {[
-              { href: "/#selection", label: "COUPONS" },
-              { href: "/#reviews", label: "REVIEWS" },
-              { href: "/#discover", label: "COMPARISONS" },
-              { href: "/about", label: "ABOUT" },
-              { href: "/disclosure", label: "AFFILIATE DISCLOSURE" },
-            ].map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                style={{
-                  fontSize: "0.7rem",
-                  letterSpacing: "0.16em",
-                  color: "rgba(255, 255, 255, 0.6)",
-                  textDecoration: "none",
-                  transition: "color 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.color = "#d4af37";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255, 255, 255, 0.6)";
-                }}
+      <footer className="border-t border-white/10 bg-[#050505]">
+        <div className="pf-container flex flex-col gap-10 py-16">
+          <div className="flex flex-wrap items-start justify-between gap-10">
+            <div>
+              <p className="pf-meta">A fragrance guide</p>
+              <Link
+                to="/"
+                className="pf-link pf-link--gold mt-2 inline-block text-[1.15rem]"
+                style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.14em" }}
               >
-                {item.label}
-              </a>
-            ))}
+                PhiloFragrancy
+              </Link>
+            </div>
+
+            <nav aria-label="Footer" className="flex flex-wrap gap-x-8 gap-y-3">
+              {[...NAV_LINKS, { href: "/disclosure", label: "DISCLOSURE" }].map((item) => (
+                <a key={item.label} href={item.href} className="pf-navlink">
+                  {item.label}
+                </a>
+              ))}
+            </nav>
           </div>
 
-          {/* Right: Copyright */}
-          <div
-            style={{
-              fontSize: "0.7rem",
-              letterSpacing: "0.12em",
-              color: "rgba(255, 255, 255, 0.4)",
-              textTransform: "uppercase",
-            }}
-          >
-            © 2026 PHILOFRAGRANCY · MADE FOR THE SENSES
+          <div className="flex flex-wrap items-center justify-between gap-6 border-t border-white/10 pt-8">
+            <p className="pf-meta">© 2026 PhiloFragrancy</p>
+            <p className="max-w-[640px] text-[0.78rem] leading-[1.7] text-white/45">
+              PhiloFragrance is an independent fragrance publication. Some links on PhiloFragrance are affiliate links.
+              We may earn a commission when you purchase through them, at no additional cost to you.
+            </p>
           </div>
-        </div>
-
-        {/* Affiliate & Google Ads Transparency Notice */}
-        <div
-          style={{
-            maxWidth: "1320px",
-            margin: "2rem auto 0 auto",
-            paddingTop: "1.5rem",
-            borderTop: "1px solid rgba(255, 255, 255, 0.05)",
-            fontSize: "0.72rem",
-            color: "rgba(255, 255, 255, 0.35)",
-            lineHeight: 1.6,
-            textAlign: "center",
-          }}
-        >
-          PhiloFragrancy is an independent editorial platform dedicated to fragrance artistry. We partner with vetted luxury retailers (FragranceNet, Sephora, Nordstrom, etc.). When you redeem a coupon or complete a purchase via our links, we may earn an affiliate commission at no extra cost to you. All fragrance reviews and evaluations are independently conducted by our editorial panel.
         </div>
       </footer>
     </div>

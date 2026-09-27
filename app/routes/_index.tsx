@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { PERFUMES, getCouponByPerfumeId, type Perfume } from "@/data/coupons";
+import { PERFUMES, COUPONS, type Perfume } from "@/data/coupons";
 
 export function meta() {
   return [
@@ -19,392 +19,245 @@ export function meta() {
   ];
 }
 
-export default function HomeRoute() {
-  const [activeTab, setActiveTab] = useState<"all" | "woody" | "oriental" | "fresh">("all");
+const FILTERS = [
+  { id: "all", label: "All Fragrances" },
+  { id: "woody", label: "Woody & Amber" },
+  { id: "oriental", label: "Warm & Spicy" },
+  { id: "fresh", label: "Fresh & Floral" },
+] as const;
 
-  const featuredPerfumes = [
-    PERFUMES.find((p) => p.slug === "bleu-de-chanel") || PERFUMES[0],
-    PERFUMES.find((p) => p.slug === "creed-aventus") || PERFUMES[1],
-    PERFUMES.find((p) => p.slug === "dior-sauvage") || PERFUMES[2],
-  ];
+type FilterId = (typeof FILTERS)[number]["id"];
+
+/* ── View models ────────────────────────────────────────────────────────────
+   Everything below reads from `app/data/coupons.ts` and nowhere else. When the
+   catalog moves to the database, these three mappers are the only thing that
+   has to change — the markup consumes the shapes they return.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/** One retailer offer for a fragrance. A fragrance can have several. */
+type Offer = {
+  retailer: string;
+  price: number;
+  referencePrice: number;
+  discount?: string;
+  url: string;
+};
+
+function offersFor(perfume: Perfume): Offer[] {
+  const offers: Offer[] = [];
+  for (const coupon of COUPONS.filter((c) => c.perfumeId === perfume.id)) {
+    offers.push({
+      retailer: coupon.retailer,
+      price: perfume.discountedPrice,
+      referencePrice: perfume.originalPrice,
+      discount: coupon.discount,
+      url: coupon.retailLink || perfume.affiliateUrl,
+    });
+  }
+  return offers;
+}
+
+function couponFor(perfume: Perfume) {
+  return COUPONS.find((c) => c.perfumeId === perfume.id);
+}
+
+/** Single-word scent tags taken from the fragrance family. */
+function tagsFor(perfume: Perfume): string[] {
+  return perfume.family.split(/\s+/).filter(Boolean).slice(0, 3);
+}
+
+/* ── Shared pieces ───────────────────────────────────────────────────────── */
+
+function Packshot({ perfume, className }: { perfume: Perfume; className?: string }) {
+  if (perfume.image) {
+    return <img src={perfume.image} alt={`${perfume.brand} ${perfume.name}`} className={className} />;
+  }
+  return (
+    <div className="pf-packshot-empty">
+      <span className="pf-packshot-empty__brand">{perfume.brand}</span>
+      <span className="pf-packshot-empty__name">{perfume.name}</span>
+      <span className="pf-packshot-empty__brand">Photography pending</span>
+    </div>
+  );
+}
+
+function Price({ perfume }: { perfume: Perfume }) {
+  return (
+    <span className="text-[1.05rem] font-semibold text-white">
+      ${perfume.discountedPrice}
+      <s className="ml-2 text-[0.8rem] font-normal text-white/40">${perfume.originalPrice}</s>
+    </span>
+  );
+}
+
+function SectionHead({
+  eyebrow,
+  title,
+  lede,
+}: {
+  eyebrow: string;
+  title: React.ReactNode;
+  lede?: string;
+}) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-x-12 gap-y-4">
+      <div className="max-w-[620px]">
+        <p className="pf-eyebrow">{eyebrow}</p>
+        <h2 className="pf-h2 mt-3">{title}</h2>
+      </div>
+      {lede && <p className="pf-lede max-w-[420px]">{lede}</p>}
+    </div>
+  );
+}
+
+/* ── Page ────────────────────────────────────────────────────────────────── */
+
+export default function HomeRoute() {
+  const [activeTab, setActiveTab] = useState<FilterId>("all");
+
+  const featured = [
+    PERFUMES.find((p) => p.slug === "creed-aventus"),
+    PERFUMES.find((p) => p.slug === "bleu-de-chanel"),
+    PERFUMES.find((p) => p.slug === "dior-sauvage"),
+  ].filter(Boolean) as Perfume[];
+
+  const comparison = [
+    PERFUMES.find((p) => p.slug === "creed-aventus"),
+    PERFUMES.find((p) => p.slug === "tom-ford-oud-wood"),
+    PERFUMES.find((p) => p.slug === "parfums-de-marly-layton"),
+  ].filter(Boolean) as Perfume[];
+
+  const reviews = [...PERFUMES].sort((a, b) => b.rating - a.rating).slice(0, 3);
 
   const filteredPerfumes = PERFUMES.filter((p) => {
     if (activeTab === "all") return true;
-    if (activeTab === "woody") return p.family.toLowerCase().includes("woody");
-    if (activeTab === "oriental") return p.family.toLowerCase().includes("oriental") || p.family.toLowerCase().includes("spicy");
-    if (activeTab === "fresh") return p.family.toLowerCase().includes("fruity") || p.family.toLowerCase().includes("aromatic") || p.family.toLowerCase().includes("floral");
+    const family = p.family.toLowerCase();
+    if (activeTab === "woody") return family.includes("woody") || family.includes("amber");
+    if (activeTab === "oriental") return family.includes("oriental") || family.includes("spicy");
+    if (activeTab === "fresh")
+      return family.includes("floral") || family.includes("fruity") || family.includes("aromatic");
     return true;
   });
 
   return (
     <div className="w-full bg-[#070707] text-[#e5e5e7]">
-      {/* ── 1. HERO SECTION (Dark design with Venus & flowers image) ── */}
-      <section
-        style={{
-          position: "relative",
-          minHeight: "88vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          backgroundColor: "#070707",
-          padding: "4rem 1.5rem",
-        }}
-      >
-        {/* Background Artwork: Venus with Flowers */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            pointerEvents: "none",
-            zIndex: 1,
-          }}
-        >
+      {/* ── 1. HERO ── */}
+      <section className="relative flex min-h-[88vh] items-center justify-center overflow-hidden px-6">
+        <div className="pointer-events-none absolute inset-0 z-[1]">
           <img
             src="/images/venus-hero.jpg"
             alt="Venus surrounded by flowers and celestial sphere"
-            style={{
-              maxHeight: "100%",
-              maxWidth: "100%",
-              width: "auto",
-              height: "auto",
-              objectFit: "contain",
-              opacity: 0.95,
-              filter: "contrast(1.05) brightness(0.96)",
-            }}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: "center 47%" }}
           />
-          {/* Radial vignette fade into dark background */}
           <div
+            className="absolute inset-0"
             style={{
-              position: "absolute",
-              inset: 0,
               background:
-                "radial-gradient(circle at center, transparent 40%, rgba(7, 7, 7, 0.7) 75%, #070707 100%)",
+                "radial-gradient(ellipse 58% 54% at 50% 47%, rgba(7,7,7,0.6) 0%, rgba(7,7,7,0.3) 48%, transparent 78%)",
             }}
           />
           <div
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: "140px",
-              background: "linear-gradient(to top, #070707 0%, transparent 100%)",
-            }}
+            className="absolute inset-x-0 top-0 h-[110px]"
+            style={{ background: "linear-gradient(to bottom, #070707 0%, rgba(7,7,7,0.5) 45%, transparent 100%)" }}
           />
           <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "80px",
-              background: "linear-gradient(to bottom, #070707 0%, transparent 100%)",
-            }}
+            className="absolute inset-x-0 bottom-0 h-[170px]"
+            style={{ background: "linear-gradient(to top, #070707 0%, rgba(7,7,7,0.6) 40%, transparent 100%)" }}
           />
         </div>
 
-        {/* Hero Overlay Content (Centered over the celestial sphere) */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 10,
-            textAlign: "center",
-            maxWidth: "680px",
-            padding: "2rem 1.5rem",
-          }}
-        >
-          {/* PHILO */}
+        <div className="relative z-10 max-w-[700px] px-6 text-center">
           <h1
+            className="text-[#ffffff] uppercase"
             style={{
               fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontSize: "clamp(3.2rem, 7vw, 5.5rem)",
+              fontSize: "clamp(3rem, 6.5vw, 5.2rem)",
               fontWeight: 500,
               letterSpacing: "0.18em",
-              color: "#ffffff",
               lineHeight: 0.95,
-              textTransform: "uppercase",
-              textShadow: "0 4px 24px rgba(0, 0, 0, 0.85)",
+              textShadow: "0 4px 24px rgba(0,0,0,0.85)",
               margin: 0,
             }}
           >
             PHILO
           </h1>
-
-          {/* FRAGRANCY (Italic Gold) */}
           <div
+            className="text-[#d4af37]"
             style={{
               fontFamily: "'Cormorant Garamond', Georgia, serif",
               fontStyle: "italic",
-              fontSize: "clamp(2.5rem, 5.5vw, 4.2rem)",
+              fontSize: "clamp(2.3rem, 5vw, 4rem)",
               fontWeight: 400,
-              color: "#d4af37",
               letterSpacing: "0.04em",
               lineHeight: 1.1,
               marginTop: "-0.2rem",
-              textShadow: "0 2px 18px rgba(0, 0, 0, 0.9), 0 0 30px rgba(212, 175, 55, 0.35)",
+              textShadow: "0 2px 18px rgba(0,0,0,0.9)",
             }}
           >
             FRAGRANCY
           </div>
-
-          {/* Subtitle: Find your signature. */}
           <p
+            className="text-white/90"
             style={{
               fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontSize: "clamp(1.1rem, 2vw, 1.45rem)",
+              fontSize: "clamp(1.15rem, 2vw, 1.5rem)",
               fontStyle: "italic",
-              color: "rgba(255, 255, 255, 0.88)",
-              letterSpacing: "0.06em",
-              marginTop: "0.75rem",
-              marginBottom: "2rem",
-              textShadow: "0 2px 10px rgba(0, 0, 0, 0.8)",
+              letterSpacing: "0.04em",
+              marginTop: "0.9rem",
+              marginBottom: "2.25rem",
+              textShadow: "0 2px 10px rgba(0,0,0,0.8)",
             }}
           >
             Find your signature.
           </p>
 
-          {/* Gold Action Button: VIEW OFFERS ↗ */}
-          <div>
-            <a
-              href="#selection"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                padding: "0.75rem 2rem",
-                backgroundColor: "#c6a45c",
-                color: "#0b0b0c",
-                fontFamily: "'Inter Variable', sans-serif",
-                fontSize: "0.75rem",
-                fontWeight: 600,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                textDecoration: "none",
-                borderRadius: "2px",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5), 0 0 25px rgba(212, 175, 55, 0.3)",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.backgroundColor = "#e0be75";
-                (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-2px)";
-                (e.currentTarget as HTMLAnchorElement).style.boxShadow =
-                  "0 6px 25px rgba(0, 0, 0, 0.6), 0 0 35px rgba(212, 175, 55, 0.5)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.backgroundColor = "#c6a45c";
-                (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(0)";
-                (e.currentTarget as HTMLAnchorElement).style.boxShadow =
-                  "0 4px 20px rgba(0, 0, 0, 0.5), 0 0 25px rgba(212, 175, 55, 0.3)";
-              }}
-            >
-              VIEW OFFERS ↗
+          <div className="flex flex-col items-center gap-4">
+            <a href="#explore" className="pf-btn">
+              Explore Offers <span className="pf-arrow">→</span>
             </a>
+            <p className="text-[0.8rem] tracking-[0.06em] text-white/55" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.9)" }}>
+              Discover fragrances, offers and trusted retailers.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* ── 2. SECTION 01 — SELECTION: Fragrances in focus ── */}
-      <section
-        id="selection"
-        style={{
-          padding: "6rem 2rem 5rem 2rem",
-          maxWidth: "1320px",
-          margin: "0 auto",
-        }}
-      >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "3rem",
-            alignItems: "start",
-          }}
-        >
-          {/* Left Column: Heading & Subtitle */}
-          <div style={{ maxWidth: "340px" }}>
-            <div
-              style={{
-                fontSize: "0.7rem",
-                letterSpacing: "0.2em",
-                fontWeight: 600,
-                color: "#997b3d",
-                textTransform: "uppercase",
-                marginBottom: "1.25rem",
-              }}
-            >
-              01 — SELECTION
-            </div>
-            <h2
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "clamp(2.4rem, 4vw, 3.5rem)",
-                lineHeight: 1.05,
-                fontWeight: 400,
-                color: "#ffffff",
-                margin: 0,
-              }}
-            >
-              Fragrances
-              <br />
-              <span
-                style={{
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
-                  fontStyle: "italic",
-                  color: "#d4af37",
-                }}
-              >
-                in focus.
-              </span>
-            </h2>
-            <p
-              style={{
-                fontSize: "0.875rem",
-                color: "rgba(255, 255, 255, 0.55)",
-                lineHeight: 1.6,
-                marginTop: "1.5rem",
-              }}
-            >
-              Selections that deserve to be experienced. Each scent is analyzed by master noses and paired with verified retailer savings.
-            </p>
-          </div>
+      {/* ── 2. FEATURED FRAGRANCES ── */}
+      <section id="featured" className="pf-section">
+        <div className="pf-container">
+          <SectionHead
+            eyebrow="Fragrances in focus"
+            title={
+              <>
+                Three worth{" "}
+                <span className="italic text-[#d4af37]">knowing.</span>
+              </>
+            }
+          />
 
-          {/* Right Column: 3 Perfume Packshot Cards */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: "1.75rem",
-            }}
-          >
-            {featuredPerfumes.map((perfume) => {
-              const coupon = getCouponByPerfumeId(perfume.id);
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((perfume) => {
+              const coupon = couponFor(perfume);
+              const offer = offersFor(perfume)[0];
               return (
-                <Link
-                  key={perfume.id}
-                  to={`/perfumes/${perfume.slug}`}
-                  style={{
-                    textDecoration: "none",
-                    color: "inherit",
-                    display: "block",
-                    group: "card",
-                  }}
-                  className="card-hover-luxury"
-                >
-                  {/* Clean White/Ivory Card Container for Bottle Packshot */}
-                  <div
-                    style={{
-                      backgroundColor: "#ffffff",
-                      borderRadius: "2px",
-                      overflow: "hidden",
-                      aspectRatio: "1 / 1.15",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "1.5rem",
-                      position: "relative",
-                      boxShadow: "0 8px 30px rgba(0, 0, 0, 0.35)",
-                    }}
-                  >
-                    {perfume.image ? (
-                      <img
-                        src={perfume.image}
-                        alt={`${perfume.brand} ${perfume.name}`}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "contain",
-                          transition: "transform 0.4s ease",
-                        }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLImageElement).style.transform = "scale(1.04)";
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLImageElement).style.transform = "scale(1)";
-                        }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          background: perfume.imageGradient,
-                          borderRadius: "4px",
-                        }}
-                      />
-                    )}
-
-                    {/* Subtle Deal Tag in Corner */}
-                    {coupon && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "12px",
-                          right: "12px",
-                          backgroundColor: "#070707",
-                          color: "#d4af37",
-                          fontSize: "0.65rem",
-                          fontWeight: 700,
-                          letterSpacing: "0.08em",
-                          padding: "0.25rem 0.6rem",
-                          borderRadius: "2px",
-                        }}
-                      >
-                        {coupon.discount}
-                      </div>
-                    )}
+                <Link key={perfume.id} to={`/perfumes/${perfume.slug}`} className="pf-card pf-group h-full">
+                  <div className="pf-card__media aspect-[4/5] p-7">
+                    <Packshot perfume={perfume} />
                   </div>
+                  <div className="pf-card__body">
+                    <p className="pf-meta">{perfume.brand}</p>
+                    <h3 className="pf-h3 mt-2 text-[1.6rem]">{perfume.name}</h3>
+                    <p className="pf-meta mt-1.5">{perfume.concentration}</p>
 
-                  {/* Card Meta Details Below */}
-                  <div style={{ marginTop: "1rem" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "baseline",
-                        justifyContent: "space-between",
-                        gap: "0.5rem",
-                      }}
-                    >
-                      <h3
-                        style={{
-                          fontFamily: "'Cormorant Garamond', Georgia, serif",
-                          fontSize: "1.35rem",
-                          fontWeight: 500,
-                          color: "#ffffff",
-                          margin: 0,
-                        }}
-                      >
-                        {perfume.name}
-                      </h3>
-                      <span
-                        style={{
-                          fontSize: "0.7rem",
-                          letterSpacing: "0.12em",
-                          color: "#d4af37",
-                          fontWeight: 600,
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "2px",
-                        }}
-                      >
-                        VIEW DEAL ↗
-                      </span>
+                    <div className="mt-auto flex items-end justify-between gap-3 border-t border-white/10 pt-5">
+                      <Price perfume={perfume} />
+                      {coupon && <span className="pf-tag pf-tag--gold">{coupon.discount}</span>}
                     </div>
 
-                    <p
-                      style={{
-                        fontSize: "0.72rem",
-                        letterSpacing: "0.1em",
-                        color: "rgba(255, 255, 255, 0.45)",
-                        textTransform: "uppercase",
-                        marginTop: "0.25rem",
-                      }}
-                    >
-                      {perfume.brand} · {perfume.concentration}
-                    </p>
+                    <span className="pf-cta mt-5">
+                      View Offer <span className="pf-arrow">→</span>
+                    </span>
                   </div>
                 </Link>
               );
@@ -413,782 +266,253 @@ export default function HomeRoute() {
         </div>
       </section>
 
-      {/* ── 3. CONTRAST BANNER: "The art of wearing well." (Ivory / Warm Cream) ── */}
-      <section
-        style={{
-          backgroundColor: "#F5F2EB",
-          color: "#18181b",
-          padding: "5.5rem 2rem",
-          textAlign: "center",
-          position: "relative",
-        }}
-      >
-        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-          {/* Subtle Top Divider Dot */}
-          <div
-            style={{
-              width: "4px",
-              height: "4px",
-              backgroundColor: "#b8860b",
-              borderRadius: "50%",
-              margin: "0 auto 1.5rem auto",
-            }}
-          />
-
-          <div
-            style={{
-              fontSize: "0.68rem",
-              letterSpacing: "0.22em",
-              fontWeight: 600,
-              color: "#a46338",
-              textTransform: "uppercase",
-              marginBottom: "1rem",
-            }}
-          >
-            A QUICKER WAY TO CHOOSE SCENT
-          </div>
-
+      {/* ── 3. EDITORIAL STATEMENT ── */}
+      <section className="bg-[#F5F2EB] px-6 py-20 text-center text-[#18181b] sm:py-24">
+        <div className="mx-auto max-w-[760px]">
+          <p className="pf-eyebrow" style={{ color: "#a46338" }}>
+            Fragrance intelligence
+          </p>
           <h2
+            className="mt-5 text-[#111113]"
             style={{
               fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontSize: "clamp(2.6rem, 5vw, 4.2rem)",
-              lineHeight: 1.08,
+              fontSize: "clamp(2.3rem, 4.6vw, 3.6rem)",
+              lineHeight: 1.12,
               fontWeight: 400,
-              color: "#111113",
               margin: 0,
             }}
           >
-            The art of{" "}
-            <span
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontStyle: "italic",
-                color: "#b05934",
-              }}
-            >
-              wearing well.
-            </span>
+            The art of <span className="italic" style={{ color: "#b05934" }}>wearing well.</span>
           </h2>
-
-          <p
-            style={{
-              fontSize: "0.95rem",
-              color: "#52525b",
-              lineHeight: 1.7,
-              marginTop: "1.25rem",
-              maxWidth: "520px",
-              marginLeft: "auto",
-              marginRight: "auto",
-            }}
-          >
-            Independent insight for a more intentional collection. We pair deep scent analysis with verified coupon codes so you can invest wisely in luxury fragrances.
+          <div className="mx-auto mt-7 h-px w-12" style={{ background: "#d8cfc0" }} />
+          <p className="mx-auto mt-7 max-w-[620px] text-[1rem] leading-[1.75] text-[#52525b]">
+            Independent fragrance insight for a more intentional collection. We explore scent profiles, performance,
+            value and available offers to help you discover fragrances worth wearing.
           </p>
         </div>
       </section>
 
-      {/* ── 4. SECTION 02 — DISCOVER: "Begin here." ── */}
-      <section
-        id="discover"
-        style={{
-          padding: "6rem 2rem",
-          maxWidth: "1320px",
-          margin: "0 auto",
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            marginBottom: "3.5rem",
-            gap: "1rem",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: "0.7rem",
-                letterSpacing: "0.2em",
-                fontWeight: 600,
-                color: "#997b3d",
-                textTransform: "uppercase",
-                marginBottom: "0.75rem",
-              }}
-            >
-              02 — DISCOVER
-            </div>
-            <h2
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "clamp(2.6rem, 4.5vw, 3.8rem)",
-                fontWeight: 400,
-                color: "#ffffff",
-                margin: 0,
-              }}
-            >
-              Begin here.
-            </h2>
+      {/* ── 4. COMPARE BEFORE YOU BUY ── */}
+      <section id="compare" className="pf-section">
+        <div className="pf-container">
+          <SectionHead
+            eyebrow="Price comparison"
+            title="Compare before you buy."
+            lede="Explore available offers from trusted fragrance retailers and choose where to shop."
+          />
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {comparison.map((perfume) => {
+              const offers = offersFor(perfume);
+              return (
+                <div key={perfume.id} className="pf-compare">
+                  <p className="pf-meta">{perfume.brand}</p>
+                  <h3 className="pf-h3 mt-2">{perfume.name}</h3>
+                  <p className="pf-meta mt-1">{perfume.concentration}</p>
+
+                  <div className="mt-5 flex-1">
+                    {offers.length === 0 && <p className="pf-meta">No retailer offer listed yet.</p>}
+                    {offers.map((offer) => (
+                      <div key={`${perfume.id}-${offer.retailer}`} className="pf-offer">
+                        <div>
+                          <p className="pf-offer__retailer">{offer.retailer}</p>
+                          <p className="pf-offer__price">
+                            ${offer.price}
+                            <s>${offer.referencePrice}</s>
+                          </p>
+                        </div>
+                        <a
+                          href={offer.url}
+                          target="_blank"
+                          rel="noopener noreferrer sponsored"
+                          className="pf-cta whitespace-nowrap"
+                        >
+                          View Offer <span className="pf-arrow">→</span>
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Link to={`/perfumes/${perfume.slug}`} className="pf-cta mt-5">
+                    Read the review <span className="pf-arrow">→</span>
+                  </Link>
+                </div>
+              );
+            })}
           </div>
-          <p
-            style={{
-              fontSize: "0.85rem",
-              color: "rgba(255, 255, 255, 0.45)",
-              maxWidth: "360px",
-              margin: 0,
-            }}
-          >
-            Navigate our fragrance database by curated savings, detailed olfactory pyramids, or direct side-by-side performance tests.
+
+          <p className="mt-8 max-w-[720px] text-[0.78rem] leading-[1.7] text-white/40">
+            Offers are listed by the retailers we link to and are verified periodically. Prices and availability are set
+            by the retailer and may change without notice.
           </p>
-        </div>
-
-        {/* 3 Columns: 01, 02, 03 */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "2.5rem",
-            paddingBottom: "3rem",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-          }}
-        >
-          {/* Column 01: Exclusive Coupons */}
-          <div
-            style={{
-              borderTop: "1px solid rgba(255, 255, 255, 0.12)",
-              paddingTop: "1.75rem",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "1rem",
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
-                  fontSize: "1.5rem",
-                  color: "#d4af37",
-                }}
-              >
-                01
-              </span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="1.5">
-                <circle cx="12" cy="12" r="9" />
-              </svg>
-            </div>
-            <div
-              style={{
-                fontSize: "0.68rem",
-                letterSpacing: "0.18em",
-                color: "rgba(255, 255, 255, 0.4)",
-                textTransform: "uppercase",
-                marginBottom: "0.5rem",
-              }}
-            >
-              SAVE BEAUTIFULLY
-            </div>
-            <a
-              href="#catalog"
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "1.65rem",
-                color: "#ffffff",
-                textDecoration: "none",
-                display: "block",
-                marginBottom: "0.75rem",
-                lineHeight: 1.2,
-                transition: "color 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.color = "#d4af37";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.color = "#ffffff";
-              }}
-            >
-              Exclusive Coupons ↗
-            </a>
-            <p style={{ fontSize: "0.8125rem", color: "rgba(255, 255, 255, 0.5)", lineHeight: 1.6 }}>
-              Direct savings codes for Creed, Dior, Tom Ford, and niche fragrance houses. Verified daily.
-            </p>
-          </div>
-
-          {/* Column 02: Detailed Reviews */}
-          <div
-            style={{
-              borderTop: "1px solid rgba(255, 255, 255, 0.12)",
-              paddingTop: "1.75rem",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "1rem",
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
-                  fontSize: "1.5rem",
-                  color: "#d4af37",
-                }}
-              >
-                02
-              </span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="1.5">
-                <circle cx="12" cy="12" r="9" />
-              </svg>
-            </div>
-            <div
-              style={{
-                fontSize: "0.68rem",
-                letterSpacing: "0.18em",
-                color: "rgba(255, 255, 255, 0.4)",
-                textTransform: "uppercase",
-                marginBottom: "0.5rem",
-              }}
-            >
-              KNOW THE NOTES
-            </div>
-            <a
-              href="#reviews"
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "1.65rem",
-                color: "#ffffff",
-                textDecoration: "none",
-                display: "block",
-                marginBottom: "0.75rem",
-                lineHeight: 1.2,
-                transition: "color 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.color = "#d4af37";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.color = "#ffffff";
-              }}
-            >
-              Detailed Reviews ↗
-            </a>
-            <p style={{ fontSize: "0.8125rem", color: "rgba(255, 255, 255, 0.5)", lineHeight: 1.6 }}>
-              Unbiased olfactory evaluations, projection distances, sillage trails, and wear-test ratings.
-            </p>
-          </div>
-
-          {/* Column 03: Smart Comparisons */}
-          <div
-            style={{
-              borderTop: "1px solid rgba(255, 255, 255, 0.12)",
-              paddingTop: "1.75rem",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "1rem",
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
-                  fontSize: "1.5rem",
-                  color: "#d4af37",
-                }}
-              >
-                03
-              </span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="1.5">
-                <circle cx="12" cy="12" r="9" />
-              </svg>
-            </div>
-            <div
-              style={{
-                fontSize: "0.68rem",
-                letterSpacing: "0.18em",
-                color: "rgba(255, 255, 255, 0.4)",
-                textTransform: "uppercase",
-                marginBottom: "0.5rem",
-              }}
-            >
-              CHOOSE WITH CLARITY
-            </div>
-            <a
-              href="#catalog"
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "1.65rem",
-                color: "#ffffff",
-                textDecoration: "none",
-                display: "block",
-                marginBottom: "0.75rem",
-                lineHeight: 1.2,
-                transition: "color 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.color = "#d4af37";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.color = "#ffffff";
-              }}
-            >
-              Smart Comparisons ↗
-            </a>
-            <p style={{ fontSize: "0.8125rem", color: "rgba(255, 255, 255, 0.5)", lineHeight: 1.6 }}>
-              EDP vs Parfum formulas compared, season compatibility charts, and alternative recommendations.
-            </p>
-          </div>
-        </div>
-
-        {/* Minimal Editorial Rows */}
-        <div style={{ marginTop: "2.5rem" }}>
-          {[
-            { title: "Coupons", meta: "SELECTED OFFERS / 24", anchor: "#catalog" },
-            { title: "Reviews", meta: "NOTES, TRAILS, IMPRESSIONS / 50", anchor: "#reviews" },
-            { title: "Comparisons", meta: "FIND YOUR ACCORD / 16", anchor: "#catalog" },
-          ].map((row, idx) => (
-            <a
-              key={idx}
-              href={row.anchor}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "1.5rem 0",
-                borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-                textDecoration: "none",
-                color: "inherit",
-                transition: "padding-left 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.paddingLeft = "8px";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.paddingLeft = "0px";
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
-                  fontSize: "1.35rem",
-                  color: "#ffffff",
-                }}
-              >
-                {row.title}
-              </span>
-              <span
-                style={{
-                  fontSize: "0.68rem",
-                  letterSpacing: "0.16em",
-                  color: "rgba(255, 255, 255, 0.45)",
-                }}
-              >
-                {row.meta}
-              </span>
-            </a>
-          ))}
         </div>
       </section>
 
-      {/* ── 5. FULL CATALOG & INDIVIDUAL PRODUCT HUBS (Google Ads DSA Compliant) ── */}
-      <section
-        id="catalog"
-        style={{
-          padding: "5rem 2rem 7rem 2rem",
-          maxWidth: "1320px",
-          margin: "0 auto",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "1.5rem",
-            marginBottom: "3rem",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-            paddingBottom: "1.5rem",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: "0.7rem",
-                letterSpacing: "0.2em",
-                color: "#d4af37",
-                textTransform: "uppercase",
-                marginBottom: "0.5rem",
-              }}
-            >
-              ALL TESTED FRAGRANCES
-            </div>
-            <h2
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "2.25rem",
-                fontWeight: 400,
-                color: "#ffffff",
-                margin: 0,
-              }}
-            >
-              Curated Fragrance Reviews & Exclusive Codes
-            </h2>
-          </div>
+      {/* ── 5. BEGIN HERE ── */}
+      <section id="discover" className="pf-section border-t border-white/10">
+        <div className="pf-container">
+          <SectionHead eyebrow="Navigate" title="Begin here." />
 
-          {/* Filter Pills */}
-          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <div className="mt-12">
             {[
-              { id: "all", label: "All Fragrances" },
-              { id: "woody", label: "Woody & Amber" },
-              { id: "oriental", label: "Warm & Spicy" },
-              { id: "fresh", label: "Fresh & Floral" },
-            ].map((tab) => (
+              {
+                title: "Coupons",
+                desc: "Find current fragrance offers and retailer deals.",
+                href: "/#explore",
+              },
+              {
+                title: "Reviews",
+                desc: "Explore detailed fragrance profiles and independent analysis.",
+                href: "/#reviews",
+              },
+              {
+                title: "Comparisons",
+                desc: "Compare available offers before deciding where to buy.",
+                href: "/#compare",
+              },
+              {
+                title: "About",
+                desc: "Learn what PhiloFragrance is and how the platform works.",
+                href: "/about",
+              },
+            ].map((row) => (
+              <Link key={row.title} to={row.href} className="pf-row pf-group flex items-center gap-6 no-underline">
+                <span className="pf-h3 min-w-[180px] text-[1.4rem]">{row.title}</span>
+                <span className="pf-lede hidden flex-1 text-[0.95rem] sm:block">{row.desc}</span>
+                <span className="pf-arrow ml-auto text-[1.1rem] text-white/40">→</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 6. EXPLORE FRAGRANCES ── */}
+      <section id="explore" className="pf-section border-t border-white/10">
+        <div className="pf-container">
+          <SectionHead
+            eyebrow="The collection"
+            title="Explore the collection"
+            lede="Discover iconic fragrances, modern releases and scents worth knowing."
+          />
+
+          <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 border-b border-white/10 pb-5">
+            {FILTERS.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                style={{
-                  padding: "0.45rem 1rem",
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.06em",
-                  borderRadius: "2px",
-                  border:
-                    activeTab === tab.id
-                      ? "1px solid #d4af37"
-                      : "1px solid rgba(255, 255, 255, 0.12)",
-                  backgroundColor:
-                    activeTab === tab.id ? "rgba(212, 175, 55, 0.12)" : "transparent",
-                  color: activeTab === tab.id ? "#d4af37" : "rgba(255, 255, 255, 0.6)",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
+                type="button"
+                className="pf-filter"
+                aria-pressed={activeTab === tab.id}
+                onClick={() => setActiveTab(tab.id)}
               >
                 {tab.label}
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Perfume Grid: Click opens Dedicated Review & Coupon Page */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))",
-            gap: "2.25rem",
-          }}
-        >
-          {filteredPerfumes.map((perfume) => {
-            const coupon = getCouponByPerfumeId(perfume.id);
-            return (
-              <Link
-                key={perfume.id}
-                to={`/perfumes/${perfume.slug}`}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  backgroundColor: "#0d0d0e",
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
-                  borderRadius: "4px",
-                  overflow: "hidden",
-                  textDecoration: "none",
-                  color: "inherit",
-                }}
-                className="card-hover-luxury"
-              >
-                {/* Image Block */}
-                <div
-                  style={{
-                    backgroundColor: "#ffffff",
-                    aspectRatio: "1 / 1.05",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "1.5rem",
-                    position: "relative",
-                  }}
-                >
-                  {perfume.image ? (
-                    <img
-                      src={perfume.image}
-                      alt={`${perfume.brand} ${perfume.name}`}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                      }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        background: perfume.imageGradient,
-                        borderRadius: "2px",
-                      }}
-                    />
-                  )}
-
-                  {coupon && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "12px",
-                        left: "12px",
-                        backgroundColor: "#c6a45c",
-                        color: "#070707",
-                        fontWeight: 700,
-                        fontSize: "0.68rem",
-                        letterSpacing: "0.06em",
-                        padding: "0.25rem 0.65rem",
-                        borderRadius: "2px",
-                      }}
-                    >
-                      {coupon.discount}
+          {filteredPerfumes.length === 0 ? (
+            <p className="pf-lede py-16 text-center">No fragrances match this family yet.</p>
+          ) : (
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredPerfumes.map((perfume) => {
+                const coupon = couponFor(perfume);
+                return (
+                  <Link
+                    key={perfume.id}
+                    to={`/perfumes/${perfume.slug}`}
+                    className="pf-card pf-group h-full min-w-0"
+                  >
+                    <div className="pf-card__media aspect-[4/5] p-6">
+                      <Packshot perfume={perfume} />
                     </div>
-                  )}
+                    <div className="pf-card__body">
+                      <p className="pf-meta">{perfume.brand}</p>
+                      <h3 className="pf-h3 mt-2">{perfume.name}</h3>
+                      <p className="pf-lede mt-3 line-clamp-2 text-[0.9rem]">{perfume.description}</p>
 
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: "10px",
-                      right: "12px",
-                      backgroundColor: "rgba(7, 7, 7, 0.8)",
-                      color: "#ffffff",
-                      fontSize: "0.65rem",
-                      padding: "0.2rem 0.5rem",
-                      borderRadius: "2px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "3px",
-                    }}
-                  >
-                    ★ {perfume.rating} ({perfume.reviewCount.toLocaleString()})
-                  </div>
-                </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {tagsFor(perfume).map((tag) => (
+                          <span key={tag} className="pf-tag">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
 
-                {/* Content */}
-                <div style={{ padding: "1.5rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                  <div
-                    style={{
-                      fontSize: "0.68rem",
-                      letterSpacing: "0.14em",
-                      color: "#997b3d",
-                      textTransform: "uppercase",
-                      marginBottom: "0.35rem",
-                    }}
-                  >
-                    {perfume.brand}
-                  </div>
+                      <div className="mt-auto flex items-end justify-between gap-3 border-t border-white/10 pt-5">
+                        <Price perfume={perfume} />
+                        {coupon && <span className="pf-tag pf-tag--gold">{coupon.discount}</span>}
+                      </div>
 
-                  <h3
-                    style={{
-                      fontFamily: "'Cormorant Garamond', Georgia, serif",
-                      fontSize: "1.45rem",
-                      fontWeight: 500,
-                      color: "#ffffff",
-                      margin: "0 0 0.5rem 0",
-                    }}
-                  >
-                    {perfume.name}
-                  </h3>
-
-                  <p
-                    style={{
-                      fontSize: "0.78rem",
-                      color: "rgba(255, 255, 255, 0.5)",
-                      lineHeight: 1.5,
-                      marginBottom: "1rem",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {perfume.description}
-                  </p>
-
-                  {/* Notes Preview */}
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "0.35rem",
-                      marginBottom: "1.25rem",
-                    }}
-                  >
-                    {perfume.topNotes.slice(0, 3).map((note) => (
-                      <span
-                        key={note}
-                        style={{
-                          fontSize: "0.68rem",
-                          backgroundColor: "rgba(255, 255, 255, 0.05)",
-                          color: "rgba(255, 255, 255, 0.7)",
-                          padding: "0.15rem 0.5rem",
-                          borderRadius: "2px",
-                        }}
-                      >
-                        {note}
+                      <span className="pf-cta mt-5">
+                        View Fragrance <span className="pf-arrow">→</span>
                       </span>
-                    ))}
-                  </div>
-
-                  {/* Price & Action Link (No exposed raw code) */}
-                  <div
-                    style={{
-                      marginTop: "auto",
-                      paddingTop: "1rem",
-                      borderTop: "1px solid rgba(255, 255, 255, 0.06)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: "0.7rem", color: "rgba(255, 255, 255, 0.4)" }}>
-                        From
-                      </div>
-                      <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "#d4af37" }}>
-                        ${perfume.discountedPrice}{" "}
-                        <span
-                          style={{
-                            fontSize: "0.75rem",
-                            textDecoration: "line-through",
-                            color: "rgba(255, 255, 255, 0.35)",
-                            fontWeight: 400,
-                          }}
-                        >
-                          ${perfume.originalPrice}
-                        </span>
-                      </div>
                     </div>
-
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        letterSpacing: "0.08em",
-                        fontWeight: 600,
-                        color: "#070707",
-                        backgroundColor: "#c6a45c",
-                        padding: "0.45rem 0.9rem",
-                        borderRadius: "2px",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.35rem",
-                      }}
-                    >
-                      View Review & Deal ↗
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* ── 6. EDITORIAL METHODOLOGY & GOOGLE ADS DSA TRUST SIGNALS ── */}
-      <section
-        id="reviews"
-        style={{
-          backgroundColor: "#050505",
-          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-          padding: "5rem 2rem",
-        }}
-      >
-        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-            <div
-              style={{
-                fontSize: "0.68rem",
-                letterSpacing: "0.2em",
-                color: "#d4af37",
-                textTransform: "uppercase",
-                marginBottom: "0.5rem",
-              }}
-            >
-              INDEPENDENT TESTING PROCESS
-            </div>
-            <h2
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "2.5rem",
-                fontWeight: 400,
-                color: "#ffffff",
-                margin: 0,
-              }}
-            >
-              How PhiloFragrancy Evaluates Scents
-            </h2>
+      {/* ── 7. FRAGRANCE REVIEWS ── */}
+      <section id="reviews" className="pf-section border-t border-white/10 bg-[#050505]">
+        <div className="pf-container">
+          <SectionHead
+            eyebrow="Editorial"
+            title="Fragrance reviews"
+            lede="Scent profile, performance and value, written for people deciding what to wear next."
+          />
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {reviews.map((perfume) => (
+              <article key={perfume.id} className="pf-card pf-group flex h-full flex-col p-7">
+                <div className="flex items-baseline justify-between gap-4">
+                  <p className="pf-meta min-w-0 flex-1">
+                    {perfume.brand} · {perfume.concentration}
+                  </p>
+                  <p className="pf-eyebrow whitespace-nowrap">{perfume.rating} / 5</p>
+                </div>
+                <h3 className="pf-h3 mt-3 text-[1.4rem]">{perfume.name}</h3>
+                <p className="pf-lede mt-4 line-clamp-4 flex-1 text-[0.95rem] italic">{perfume.expertVerdict}</p>
+                <Link to={`/perfumes/${perfume.slug}`} className="pf-cta mt-6">
+                  Read review <span className="pf-arrow">→</span>
+                </Link>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 8. HOW WE EVALUATE ── */}
+      <section id="standards" className="pf-section border-t border-white/10">
+        <div className="pf-container">
+          <div className="max-w-[640px]">
+            <p className="pf-eyebrow">Editorial criteria</p>
+            <h2 className="pf-h2 mt-3">How we evaluate fragrances</h2>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-              gap: "2rem",
-            }}
-          >
+          <div className="mt-12 grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
-                step: "01",
-                title: "Blind Lab Wear-Testing",
-                desc: "Every perfume undergoes 48-hour testing on both human skin and neutral blotters to measure true longevity and scent evolution.",
+                title: "Scent profile",
+                desc: "Notes, accords and overall character.",
               },
               {
-                step: "02",
-                title: "Olfactory Pyramids",
-                desc: "We deconstruct top, heart, and base notes with chemical analysis and nosing panels to confirm authenticity and depth.",
+                title: "Performance",
+                desc: "Longevity and projection based on available fragrance information and established reviews.",
               },
               {
-                step: "03",
-                title: "Coupon Verification",
-                desc: "Our discount codes are tested daily with authorized retailers (FragranceNet, Sephora, Nordstrom) ensuring 100% active checkout status.",
+                title: "Value",
+                desc: "Price positioning and the retailer offers currently available.",
               },
               {
-                step: "04",
-                title: "Affiliate Transparency",
-                desc: "Editorial ratings remain 100% independent. We only recommend genuine batch formulations from vetted distributors.",
+                title: "Transparency",
+                desc: "A clear distinction between editorial information, retailer offers and affiliate relationships.",
               },
             ].map((item) => (
-              <div
-                key={item.step}
-                style={{
-                  borderLeft: "1px solid #d4af37",
-                  paddingLeft: "1.25rem",
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: "'Cormorant Garamond', Georgia, serif",
-                    fontSize: "1.25rem",
-                    color: "#d4af37",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {item.step}
-                </div>
-                <h4
-                  style={{
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                    color: "#ffffff",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {item.title}
-                </h4>
-                <p style={{ fontSize: "0.8rem", color: "rgba(255, 255, 255, 0.55)", lineHeight: 1.6 }}>
-                  {item.desc}
-                </p>
+              <div key={item.title} className="border-t border-white/10 pt-6">
+                <h3 className="pf-h3 text-[1.25rem]">{item.title}</h3>
+                <p className="pf-lede mt-3 text-[0.9rem]">{item.desc}</p>
               </div>
             ))}
           </div>
