@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from "react-router";
 
 import { PERFUMES, type Perfume } from "@/data/coupons";
+import { pathForSlug } from "@/data/deals";
 
 import { SearchField } from "@/components/deal/SearchField";
 
@@ -108,7 +109,7 @@ export default function SearchRoute() {
               {results.map((perfume) => (
                 <li key={perfume.id}>
                   <Link
-                    to={`/perfumes/${perfume.slug}`}
+                    to={pathForSlug(perfume.slug)}
                     className="pf-group flex h-full flex-col bg-[#070707] p-6 no-underline transition-colors duration-200 hover:bg-[#0b0b0c]"
                   >
                     <p className="pf-meta">{perfume.brand}</p>
@@ -116,7 +117,8 @@ export default function SearchRoute() {
                     <p className="pf-lede mt-2 line-clamp-2 flex-1 text-[0.88rem]">{perfume.description}</p>
                     <p className="pf-meta mt-5">{perfume.concentration}</p>
                     <span className="pf-cta mt-4">
-                      View Fragrance <span className="pf-arrow">→</span>
+                      {pathForSlug(perfume.slug).startsWith("/compare") ? "Compare & read" : "View Fragrance"}{" "}
+                      <span className="pf-arrow">→</span>
                     </span>
                   </Link>
                 </li>

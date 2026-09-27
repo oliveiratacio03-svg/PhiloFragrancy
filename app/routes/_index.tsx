@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 
 import { PERFUMES, type Perfume } from "@/data/coupons";
-import { DEAL_STEPS, FEATURED_DEALS } from "@/data/deals";
+import { DEAL_STEPS, FEATURED_DEALS, pathForSlug } from "@/data/deals";
 
 import { DealCard } from "@/components/deal/DealCard";
 import { FaqList } from "@/components/deal/FaqList";
@@ -264,7 +264,7 @@ export default function HomeRoute() {
           ) : (
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredPerfumes.map((perfume) => (
-                <Link key={perfume.id} to={`/perfumes/${perfume.slug}`} className="pf-card pf-group h-full min-w-0">
+                <Link key={perfume.id} to={pathForSlug(perfume.slug)} className="pf-card pf-group h-full min-w-0">
                   <div className="pf-card__media aspect-[4/5] p-6">
                     <Packshot perfume={perfume} />
                   </div>
@@ -281,7 +281,8 @@ export default function HomeRoute() {
                     <p className="pf-meta mt-auto border-t border-white/10 pt-5">{perfume.concentration}</p>
 
                     <span className="pf-cta mt-5">
-                      View Fragrance <span className="pf-arrow">→</span>
+                      {pathForSlug(perfume.slug).startsWith("/compare") ? "Compare & read" : "View Fragrance"}{" "}
+                      <span className="pf-arrow">→</span>
                     </span>
                   </div>
                 </Link>

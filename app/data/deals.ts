@@ -1,4 +1,4 @@
-import { PERFUMES } from "./coupons";
+import { PERFUMES, type Perfume } from "./coupons";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
@@ -166,6 +166,61 @@ export const COMPARISON_ROWS: ComparisonRow[] = FEATURED_DEALS.map((deal) => {
 
 export function dealForSlug(slug: string): Deal | undefined {
   return FEATURED_DEALS.find((d) => d.slug === slug);
+}
+
+/**
+ * Where a card for this fragrance should go.
+ *
+ * A fragrance with listed offers belongs on the comparison page — that is the
+ * page that answers "where do I buy this", which is the question a card click
+ * implies. One with no offers has nothing to compare, so it goes to the review
+ * instead, where there is actual content. Sending everything to one of the two
+ * would mean either dead-ending shoppers on a page with no prices or burying
+ * the review behind an extra step.
+ */
+export function pathForSlug(slug: string): string {
+  return dealForSlug(slug) ? `/compare/${slug}` : `/perfumes/${slug}`;
+}
+
+/**
+ * Fragrances most worth looking at next to this one.
+ *
+ * Scored on two things we actually have: shared words in the scent family, and
+ * shared notes across the pyramid. That is a real signal — a reader who likes
+ * the vetiver and sandalwood in Oud Wood genuinely does want to see Sauvage
+ * Parfum next to it.
+ *
+ * The prompt this replaces asked for a query on a `tags` array. No such array
+ * exists, and inventing one to match it would mean shipping a field nobody
+ * derived from anything. Family and notes are the fields that carry the meaning.
+ */
+export function similarTo(slug: string, limit = 4): Perfume[] {
+  const source = PERFUMES.find((p) => p.slug === slug);
+  if (!source) return [];
+
+  const familyWords = (s: string) => new Set(s.toLowerCase().split(/\s+/).filter(Boolean));
+  const sourceFamily = familyWords(source.family);
+  const sourceNotes = new Set(
+    [...source.topNotes, ...source.heartNotes, ...source.baseNotes].map((n) => n.toLowerCase()),
+  );
+
+  return PERFUMES.filter((p) => p.slug !== slug)
+    .map((p) => {
+      const pFamily = familyWords(p.family);
+      let familyOverlap = 0;
+      for (const word of pFamily) if (sourceFamily.has(word)) familyOverlap += 1;
+
+      const pNotes = [...p.topNotes, ...p.heartNotes, ...p.baseNotes].map((n) => n.toLowerCase());
+      const noteOverlap = pNotes.filter((n) => sourceNotes.has(n)).length;
+
+      return { perfume: p, score: familyOverlap * 2 + noteOverlap };
+    })
+    /* A score of zero means nothing in common — better to show nothing than to
+       pad the row with an arbitrary fragrance that shares no notes at all. */
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score || a.perfume.name.localeCompare(b.perfume.name))
+    .slice(0, limit)
+    .map((entry) => entry.perfume);
 }
 
 /**

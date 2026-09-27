@@ -118,6 +118,31 @@ part of that build, not leave them as an empty template.
   `isPublicPath` drops the `<ClientOnly>` wrapper so public routes SSR, which put
   `DbSyncSetup` back on the server render path; it renders `null`, so it is now
   mounted client-only via `useIsClient`.
+- **Comparison page (2026-09-27):** `/compare/:slug` rebuilt as the conversion
+  surface — breadcrumb and packshot, one card per retailer with a "lowest
+  listed" marker, the review, pros/cons, the verdict, the note pyramid, matched
+  similar fragrances, a per-fragrance FAQ, and a closing affiliate block. Two
+  structural decisions worth keeping:
+  - *Similar is scored, not tagged.* `similarTo()` ranks on shared scent-family
+    words and shared notes, weighted 2:1, and drops anything scoring zero rather
+    than padding the row. The original request asked for a query on a `tags`
+    array; no such array exists, and inventing one to match it would mean
+    shipping a field nobody derived from anything.
+  - *One price answer, not eight.* The "is it worth it" FAQ is written once in
+    the route and shared, because eight copies would be eight chances for the
+    wording to drift into something we cannot support.
+  - `pathForSlug()` is the one seam that decides where a card goes: a fragrance
+    with listed offers opens the comparison page, one without opens the review.
+    A card click implies "where do I buy this", and sending a shopper to a page
+    with no prices answers nothing.
+- **Dev note — data modules do not hot-reload (2026-09-27):** editing
+  `app/data/*.ts` does not invalidate the Vite SSR module graph when no route
+  module changes alongside it. New exports arrive as `undefined` and the route
+  throws `X is not a function` while `tsc` stays clean and the Vite log shows
+  nothing wrong. The tell is that the log contains an HMR line for
+  `app/routes/*` and none for the data file. Restart `pnpm dev` after editing a
+  data module. The same applies to `server/plugins/*.ts`, which is why changing
+  `auth.ts` appeared to have no effect.
 
 ## Agent-native is structural, not visual
 
