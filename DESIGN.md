@@ -143,6 +143,31 @@ part of that build, not leave them as an empty template.
   `app/routes/*` and none for the data file. Restart `pnpm dev` after editing a
   data module. The same applies to `server/plugins/*.ts`, which is why changing
   `auth.ts` appeared to have no effect.
+- **Batch pricing pipeline (2026-09-27):** `batch-update-coupons.js` reads a
+  hand-filled `batch-updates.json` and splits the work by data kind, which is the
+  rule the schema is built on:
+  - *images* rewrite `coupons.ts`, guarded hard. The slug must exist, the
+    `image:` line must be found exactly once inside that slug's object, and the
+    file is scoped to the block so a bare `image:` elsewhere cannot match. Any
+    deviation aborts the run with the file untouched — a half-applied image
+    batch is worse than none.
+  - *prices* go to a generated `app/data/pricing.json` that `deals.ts` reads.
+    Never into `coupons.ts`. A script that scraped prices into the prose file
+    would quietly undo the editorial/retailer separation the whole schema
+    encodes.
+  `PREENCHER` is a guard, not a value: the script refuses to run while any
+  placeholder is present, and lists every one of them at once. A batch that
+  ships the literal string `PREENCHER` into a price field is worse than a batch
+  that does not run. Currency is mandatory — a number without a currency is not
+  a price.
+- **Price disclosure has three states, not one (2026-09-27):** `SampleNote` reads
+  `recordedOnSummary()` and distinguishes nothing-recorded, some-recorded and
+  all-recorded. The mixed case is the one that matters: printing a blanket
+  "example pricing" understates the prices that were hand-recorded, and printing
+  "updated on X" overstates the ones that were not. Both mislead, in opposite
+  directions. `recordedOn: null` must render as "date not recorded", never as
+  "last updated" — a date nobody wrote down is worse than no date, because a
+  reader treats a date as a promise that someone looked.
 
 ## Agent-native is structural, not visual
 

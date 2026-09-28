@@ -1,0 +1,50 @@
+[
+  {
+    "slug": "dior-sauvage",
+    "in_catalog": true,
+    "image_url": "/images/dior-sauvage.jpg",
+    "image_note": "Existing asset kept. The FragranceNet CDN photo for this product is a different, unlabelled bottle (almost certainly the EDT) and was not used.",
+    "currency": "PREENCHER",
+    "recorded_on": "PREENCHER",
+    "amazon_price": "PREENCHER",
+    "amazon_link": "PREENCHER",
+    "fragrance_net_price": "PREENCHER",
+    "fragrance_net_link": "https://www.fragrancenet.com/fragrances/christian-dior"
+  },
+  {
+    "slug": "creed-aventus",
+    "in_catalog": true,
+    "image_url": "/images/creed-aventus.jpg",
+    "image_note": "Existing asset kept. The CDN URL supplied for this slug (283046.png) is byte-identical to the Dior Sauvage file, so it was discarded.",
+    "currency": "PREENCHER",
+    "recorded_on": "PREENCHER",
+    "amazon_price": "PREENCHER",
+    "amazon_link": "PREENCHER",
+    "fragrance_net_price": "PREENCHER",
+    "fragrance_net_link": "https://www.fragrancenet.com/fragrances/creed"
+  },
+  {
+    "slug": "armani-code",
+    "in_catalog": false,
+    "image_url": "/images/armani-code.png",
+    "image_note": "Downloaded from the FragranceNet CDN at 1000x1000. Added to coupons.ts on 2026-09-27.",
+    "currency": "PREENCHER",
+    "recorded_on": "PREENCHER",
+    "amazon_price": "PREENCHER",
+    "amazon_link": "PREENCHER",
+    "fragrance_net_price": "PREENCHER",
+    "fragrance_net_link": "https://www.fragrancenet.com/fragrances/giorgio-armani"
+  },
+  {
+    "slug": "d-and-g-light-blue",
+    "in_catalog": false,
+    "image_url": "/images/d-and-g-light-blue.png",
+    "image_note": "Downloaded from the FragranceNet CDN at 1000x1000. Added to coupons.ts on 2026-09-27.",
+    "currency": "PREENCHER",
+    "recorded_on": "PREENCHER",
+    "amazon_price": "PREENCHER",
+    "amazon_link": "PREENCHER",
+    "fragrance_net_price": "PREENCHER",
+    "fragrance_net_link": "https://www.fragrancenet.com/fragrances/dolce-and-gabbana"
+  }
+]

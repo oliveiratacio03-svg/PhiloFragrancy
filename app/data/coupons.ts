@@ -419,6 +419,112 @@ export const PERFUMES: Perfume[] = [
       "Reflection Man is a floral fragrance built on a woody base, which is what separates it from the usual sweet or powdery ones. Bitter orange leaf and red pepper berries give the opening some snap, neroli, orris, jasmine and ylang-ylang are the middle, and vetiver, cedarwood, sandalwood and patchouli are the base. The orris is doing much of the work — it is what gives the centre a powdery texture without the sweetness that usually arrives with it. Amouage is an Omani house and this is one of its heavier compositions, with enough vetiver and sandalwood in the base to read as formal rather than casual. Amouage does not publish performance figures and this review does not measure any; the retailer offers are on the comparison page.",
     affiliateUrl: "https://www.fragrancenet.com/cologne/amouage/amouage-reflection/eau-de-parfum?coupon=AMOUAGE25&utm_source=philofragrancy&utm_medium=affiliate",
   },
+
+  /* ── Added 2026-09-27 ──────────────────────────────────────────────────────
+     Two entries added after the FragranceNet image scrape. The provenance of
+     these two is weaker than the six above them and should be tightened before
+     anything downstream treats them as sourced:
+
+     - the note pyramids come from public retailer and reference listings, not
+       from a house page we fetched and recorded. FragranceNet and Basenotes
+       returned 403 when this project tried to read them directly, so nothing
+       here has a `review_sources` row behind it.
+     - the perfumers are set to null rather than guessed. Both are commonly
+       credited to Alberto Morillas, and that attribution is very likely right,
+       but "very likely right from memory" is the same standard that produced
+       the invented review counts these entries sit next to. Leave it null until
+       a house page confirms it.
+     - release years and concentrations are the commonly published ones and are
+       the most likely to be accurate of everything in this block.
+
+     Prices are 0 because there is no checked price for either product. They are
+     not free and they are not zero — the field is legacy and unrendered, and
+     the real figures come from the generated `pricing.json` via `deals.ts`.
+     Do not read anything into the 0. */
+
+  {
+    id: "armani-code",
+    slug: "armani-code",
+    name: "Code",
+    brand: "Giorgio Armani",
+    concentration: "Eau de Toilette",
+    family: "Woody Amber",
+    image: "/images/armani-code.png",
+    topNotes: ["Lemon", "Bergamot", "Lavender", "Clary Sage", "Pink Pepper"],
+    heartNotes: ["Cedar", "Fir", "Rose", "Jasmine"],
+    baseNotes: ["Tonka Bean", "Vanilla", "Amber", "Patchouli", "Sandalwood"],
+    description:
+      "Released in 2006, Code is an aromatic-woody fragrance built on a citrus and lavender opening over a base of tonka bean, vanilla and woods. It is a blue bottle, a fougère-adjacent structure, and the reason it has stayed in circulation for nearly two decades is that it is easy to wear and hard to dislike.",
+    longevity: 6,
+    sillage: 6,
+    rating: 0,
+    reviewCount: 0,
+    imageGradient: "linear-gradient(135deg, #0a0a0a 0%, #14243a 50%, #1e3a5f 100%)",
+    season: ["Spring", "Summer", "Fall", "Winter"],
+    occasion: ["Office", "Casual", "Everyday", "Signature"],
+    originalPrice: 0,
+    discountedPrice: 0,
+    pros: [
+      "Citrus and lavender open it cleanly without being sharp",
+      "Tonka bean and vanilla in the base make it warm rather than austere",
+      "Genuinely easy to wear — the safest aromatic-woody in the category",
+      "A scent that reads as competent rather than as a statement, which is often what you want"
+    ],
+    cons: [
+      "Common enough that it will not be distinctive to anyone nearby",
+      "The base is warm, so it is less useful in high heat",
+      "The lavender and tonka combination is a well-trodden path in men's fragrance"
+    ],
+    expertVerdict:
+      "Code is a competent, well-constructed aromatic-woody that does one thing without fuss. What keeps it relevant is not distinctiveness but ease: the opening is clean, the base is warm, and there is nothing in it that decides for you when you have had enough.",
+    fullReview:
+      "Code is a fougère-adjacent composition from 2006, and the structure is legible: lemon, bergamot, lavender and clary sage open it, cedar, fir, rose and jasmine sit underneath, and tonka bean, vanilla, amber, patchouli and sandalwood make up the base. The citrus and the lavender are the volatile part and clear within the first hour or so; what replaces them is the tonka and vanilla, which is why it reads warm rather than fresh for most of the wear. The fir and cedar in the middle are doing quiet work — they keep the base from becoming simply sweet, and they are what stops it smelling like a barbershop scent despite the lavender. Giorgio Armani does not publish performance figures and this review does not measure any; the retailer offers are on the comparison page.",
+    /* No `?coupon=` parameter. The older entries above still carry invented
+       ones, which is a loose end worth closing, but a new entry should not
+       start that habit. */
+    affiliateUrl:
+      "https://www.fragrancenet.com/cologne/giorgio-armani/armani-code/eau-de-toilette?utm_source=philofragrancy&utm_medium=affiliate",
+  },
+  {
+    id: "d-and-g-light-blue",
+    slug: "d-and-g-light-blue",
+    name: "Light Blue",
+    brand: "Dolce & Gabbana",
+    concentration: "Eau de Toilette",
+    family: "Aromatic Fruity",
+    image: "/images/d-and-g-light-blue.png",
+    topNotes: ["Sicilian Lemon", "Lime", "Grapefruit", "Sage", "Blueberry", "Melon"],
+    heartNotes: ["Peony", "Jasmine", "Green Apple", "Freesia", "Iris"],
+    baseNotes: ["White Musk", "Amber", "Vanilla", "Cedar"],
+    description:
+      "Released in 2001, Light Blue is a fresh fruity fragrance built on Sicilian citrus and melon over a soft floral heart and a musk-and-vanilla base. It is one of the most recognisable fresh scents of its decade, and the reason is the opening rather than the drydown.",
+    longevity: 5,
+    sillage: 5,
+    rating: 0,
+    reviewCount: 0,
+    imageGradient: "linear-gradient(135deg, #cfe4f5 0%, #a8cbe8 50%, #dcecf7 100%)",
+    season: ["Spring", "Summer"],
+    occasion: ["Daytime", "Casual", "Office", "Holidays"],
+    originalPrice: 0,
+    discountedPrice: 0,
+    pros: [
+      "The Sicilian lemon and melon opening is the whole point, and it delivers",
+      "Genuinely made for hot weather — one of the few fresh scents that does not turn cloying",
+      "A soft musk-and-vanilla base keeps it from being sharp citrus all the way down",
+      "Unisex in a way that reads as casual rather than as a marketing claim"
+    ],
+    cons: [
+      "Citrus is the most volatile material in perfumery — the opening is gone quickly",
+      "Very widely worn, so it is not a distinctive scent profile",
+      "The base is soft rather than interesting, which can read as thin after the first hour"
+    ],
+    expertVerdict:
+      "Light Blue is a fresh fruit fragrance that does exactly one thing and does it well. The opening is the reason to buy it; the drydown is pleasant but plain, and anyone buying it for longevity is buying the wrong fragrance.",
+    fullReview:
+      "Light Blue is a fresh fruity composition from 2001. Sicilian lemon, lime, grapefruit, sage, blueberry and melon open it; peony, jasmine, green apple, freesia and iris make up the middle; white musk, amber, vanilla and cedar are the base. Be clear-eyed about what that means in practice: the top notes are among the most volatile materials in perfumery, so the opening that makes the fragrance recognisable is also the part that disappears first, usually inside the first hour or two. What is left is the musk, vanilla and cedar, which is soft and clean rather than interesting — it will not offend anyone, and it is not going to develop for you either. That is the trade. It is also why this is a fragrance to wear in heat rather than one to keep on all evening. Dolce & Gabbana does not publish performance figures and this review does not measure any; the retailer offers are on the comparison page.",
+    affiliateUrl:
+      "https://www.fragrancenet.com/cologne/dolce-and-gabbana/light-blue/eau-de-toilette?utm_source=philofragrancy&utm_medium=affiliate",
+  },
 ];
 
 export const COUPONS: Coupon[] = [

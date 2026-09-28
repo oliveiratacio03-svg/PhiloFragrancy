@@ -1,4 +1,5 @@
 import { PERFUMES, type Perfume } from "./coupons";
+import pricing from "./pricing.json";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
@@ -27,6 +28,65 @@ import { PERFUMES, type Perfume } from "./coupons";
  */
 
 export const PRICING_IS_SAMPLE = true;
+
+/** True when something in `pricing.json` actually carries a verification flag. */
+export const PRICING_IS_MACHINE_VERIFIED = pricing.machineVerified === true;
+
+/**
+ * The date a retailer's figure was recorded, or `null`.
+ *
+ * `null` is the normal case and it has to be rendered as "date not recorded",
+ * never as "last updated". A date nobody wrote down is worse than no date,
+ * because a reader treats a date as a promise that someone looked.
+ */
+export function pricingRecordedOn(retailer: string): string | null {
+  for (const offers of Object.values(pricing.entries)) {
+    for (const offer of offers) {
+      if (offer.retailer === retailer) return offer.recordedOn;
+    }
+  }
+  return null;
+}
+
+export type RecordedSummary = {
+  state: "none" | "partial" | "all";
+  total: number;
+  withDate: number;
+  latest: string | null;
+};
+
+/**
+ * How much of the visible pricing actually carries a recorded date.
+ *
+ * A single boolean cannot describe the interesting case, which is a mix: some
+ * prices hand-recorded, some still placeholders. Printing a blanket "example
+ * pricing" there understates the checked ones; printing "updated on X" overstates
+ * the unchecked ones. Both mislead, in opposite directions, so the UI gets the
+ * real counts and decides for itself.
+ */
+export function recordedOnSummary(): RecordedSummary {
+  const dates: string[] = [];
+  let total = 0;
+
+  for (const offers of Object.values(pricing.entries)) {
+    for (const offer of offers) {
+      // Only prices that are actually displayed count. A `null` price renders
+      // as "not listed" and needs no disclosure.
+      if (typeof offer.priceCents !== "number") continue;
+      total += 1;
+      if (typeof offer.recordedOn === "string") dates.push(offer.recordedOn);
+    }
+  }
+
+  // `dates[dates.length - 1]` rather than `.at(-1)`: the configured lib target
+  // predates `Array.prototype.at`.
+  const sorted = dates.sort();
+  const latest = sorted.length > 0 ? sorted[sorted.length - 1] : null;
+  const withDate = sorted.length;
+  const state = withDate === 0 ? "none" : withDate < total ? "partial" : "all";
+
+  return { state, total, withDate, latest };
+}
 
 /**
  * Stands in for the search-volume figures used to rank these products. It is
@@ -85,74 +145,45 @@ const AVENTUS = catalogEntry("creed-aventus");
 const SAUVAGE = catalogEntry("dior-sauvage");
 const BLEU = catalogEntry("bleu-de-chanel");
 
-export const FEATURED_DEALS: Deal[] = [
-  {
-    slug: AVENTUS.slug,
-    demand: "Premium · high intent",
-    offers: [
-      {
-        retailer: "FragranceNet",
-        priceCents: 37100,
-        referencePriceCents: 49500,
-        discountLabel: "25% OFF",
-        url: AVENTUS.affiliateUrl,
-        checkedAt: null,
-      },
-      {
-        retailer: "Amazon",
-        priceCents: 42500,
-        referencePriceCents: null,
-        discountLabel: null,
-        url: "https://www.amazon.com/s?k=creed+aventus+100ml",
-        checkedAt: null,
-      },
-    ],
-  },
-  {
-    slug: SAUVAGE.slug,
-    demand: "High volume",
-    offers: [
-      {
-        retailer: "FragranceNet",
-        priceCents: 14800,
-        referencePriceCents: 18500,
-        discountLabel: "20% OFF",
-        url: SAUVAGE.affiliateUrl,
-        checkedAt: null,
-      },
-      {
-        retailer: "Amazon",
-        priceCents: null,
-        referencePriceCents: null,
-        discountLabel: null,
-        url: "https://www.amazon.com/s?k=dior+sauvage+parfum+100ml",
-        checkedAt: null,
-      },
-    ],
-  },
-  {
-    slug: BLEU.slug,
-    demand: "High volume",
-    offers: [
-      {
-        retailer: "FragranceNet",
-        priceCents: 13200,
-        referencePriceCents: 16500,
-        discountLabel: "20% OFF",
-        url: BLEU.affiliateUrl,
-        checkedAt: null,
-      },
-      {
-        retailer: "Amazon",
-        priceCents: null,
-        referencePriceCents: null,
-        discountLabel: null,
-        url: "https://www.amazon.com/s?k=chanel+bleu+de+chanel+edp",
-        checkedAt: null,
-      },
-    ],
-  },
-];
+/**
+ * Featured rows: which products get a card, in what order, and which retailers
+ * each one is compared across.
+ *
+ * The prices themselves are NOT here. They are read from `pricing.json` below,
+ * keyed by slug, so a batch update changes a number without ever touching this
+ * file. What lives here is only the merchandising decision.
+ */
+const FEATURED_ORDER = [
+  { slug: AVENTUS.slug, demand: "Premium · high intent", retailers: ["FragranceNet", "Amazon"] },
+  { slug: SAUVAGE.slug, demand: "High volume", retailers: ["FragranceNet", "Amazon"] },
+  { slug: BLEU.slug, demand: "High volume", retailers: ["FragranceNet", "Amazon"] },
+] as const;
+
+/** A slug with no entry in `pricing.json` yields no price and no crash. */
+function offersFromPricing(slug: string, retailers: readonly string[]): DealOffer[] {
+  const stored = (pricing.entries as Record<string, unknown>)[slug] as
+    | Array<Record<string, unknown>>
+    | undefined;
+
+  return retailers.map((retailer) => {
+    const row = stored?.find((o) => o.retailer === retailer);
+    return {
+      retailer,
+      priceCents: typeof row?.priceCents === "number" ? row.priceCents : null,
+      referencePriceCents:
+        typeof row?.originalPriceCents === "number" ? row.originalPriceCents : null,
+      discountLabel: null,
+      url: typeof row?.affiliateUrl === "string" ? row.affiliateUrl : "",
+      checkedAt: typeof row?.recordedOn === "string" ? row.recordedOn : null,
+    };
+  });
+}
+
+export const FEATURED_DEALS: Deal[] = FEATURED_ORDER.map((row) => ({
+  slug: row.slug,
+  demand: row.demand,
+  offers: offersFromPricing(row.slug, row.retailers),
+}));
 
 /** The cross-store table. Sourced from the same deals, never a second copy. */
 export const COMPARISON_ROWS: ComparisonRow[] = FEATURED_DEALS.map((deal) => {
@@ -164,19 +195,52 @@ export const COMPARISON_ROWS: ComparisonRow[] = FEATURED_DEALS.map((deal) => {
   return { slug: deal.slug, stores };
 });
 
+/**
+ * The deal for a fragrance, from whatever the pricing file has for it.
+ *
+ * `FEATURED_ORDER` is a merchandising whitelist, not a gate on data. A product
+ * that a batch supplied prices for but that nobody promoted to a homepage card
+ * still has to be able to show those prices on its own comparison page — so
+ * this falls back to the pricing file for any slug it can find there. Without
+ * the fallback a product with real, checked prices would render "no retailer
+ * offer listed yet" and the batch would look like it had failed.
+ */
 export function dealForSlug(slug: string): Deal | undefined {
-  return FEATURED_DEALS.find((d) => d.slug === slug);
+  const featured = FEATURED_DEALS.find((d) => d.slug === slug);
+  if (featured) return featured;
+
+  const perfume = PERFUMES.find((p) => p.slug === slug);
+  if (!perfume) return undefined;
+
+  const stored = (pricing.entries as Record<string, unknown>)[slug] as
+    | Array<Record<string, unknown>>
+    | undefined;
+  if (!stored || stored.length === 0) return undefined;
+
+  return {
+    slug,
+    demand: "Listed in the catalog",
+    offers: stored.map((row) => ({
+      retailer: String(row.retailer),
+      priceCents: typeof row.priceCents === "number" ? row.priceCents : null,
+      referencePriceCents:
+        typeof row.originalPriceCents === "number" ? row.originalPriceCents : null,
+      discountLabel: null,
+      url: typeof row.affiliateUrl === "string" ? row.affiliateUrl : "",
+      checkedAt: typeof row.recordedOn === "string" ? row.recordedOn : null,
+    })),
+  };
 }
 
 /**
  * Where a card for this fragrance should go.
  *
- * A fragrance with listed offers belongs on the comparison page — that is the
- * page that answers "where do I buy this", which is the question a card click
- * implies. One with no offers has nothing to compare, so it goes to the review
- * instead, where there is actual content. Sending everything to one of the two
- * would mean either dead-ending shoppers on a page with no prices or burying
- * the review behind an extra step.
+ * A fragrance with a price on file belongs on the comparison page — that is
+ * the page that answers "where do I buy this", which is the question a card
+ * click implies. One with no offers has nothing to compare, so it goes to the
+ * review instead, where there is actual content. Sending everything to one of
+ * the two would mean either dead-ending shoppers on a page with no prices or
+ * burying the review behind an extra step.
  */
 export function pathForSlug(slug: string): string {
   return dealForSlug(slug) ? `/compare/${slug}` : `/perfumes/${slug}`;

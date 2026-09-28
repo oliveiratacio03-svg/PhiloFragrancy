@@ -1,0 +1,118 @@
+{
+  "_comment": "GERADO por batch-update-coupons.js. Não editar à mão. Preços de retailer nunca entram em coupons.ts — a separação entre dado editorial e dado comercial é a regra do schema.",
+  "generatedAt": "2026-09-28T01:50:42.124Z",
+  "source": "batch-updates.json",
+  "machineVerified": false,
+  "entries": {
+    "creed-aventus": [
+      {
+        "retailer": "FragranceNet",
+        "priceCents": 37100,
+        "originalPriceCents": 49500,
+        "currency": "USD",
+        "affiliateUrl": "https://www.fragrancenet.com/cologne/creed/creed-aventus/eau-de-parfum?coupon=AVENTUS25&utm_source=philofragrancy&utm_medium=affiliate",
+        "availability": "unknown",
+        "recordedOn": null,
+        "recordedBy": "seed"
+      },
+      {
+        "retailer": "Amazon",
+        "priceCents": 42500,
+        "originalPriceCents": null,
+        "currency": "USD",
+        "affiliateUrl": "https://www.amazon.com/s?k=creed+aventus+100ml",
+        "availability": "unknown",
+        "recordedOn": null,
+        "recordedBy": "seed"
+      }
+    ],
+    "dior-sauvage": [
+      {
+        "retailer": "FragranceNet",
+        "priceCents": 14800,
+        "originalPriceCents": 18500,
+        "currency": "USD",
+        "affiliateUrl": "https://www.fragrancenet.com/cologne/christian-dior/sauvage/parfum?coupon=SAUVAGE20&utm_source=philofragrancy&utm_medium=affiliate",
+        "availability": "unknown",
+        "recordedOn": null,
+        "recordedBy": "seed"
+      },
+      {
+        "retailer": "Amazon",
+        "priceCents": null,
+        "originalPriceCents": null,
+        "currency": "USD",
+        "affiliateUrl": "https://www.amazon.com/s?k=dior+sauvage+parfum+100ml",
+        "availability": "unknown",
+        "recordedOn": null,
+        "recordedBy": "seed"
+      }
+    ],
+    "bleu-de-chanel": [
+      {
+        "retailer": "FragranceNet",
+        "priceCents": 13200,
+        "originalPriceCents": 16500,
+        "currency": "USD",
+        "affiliateUrl": "https://www.fragrancenet.com/cologne/chanel/bleu-de-chanel/eau-de-parfum?coupon=BLEU20&utm_source=philofragrancy&utm_medium=affiliate",
+        "availability": "unknown",
+        "recordedOn": null,
+        "recordedBy": "seed"
+      },
+      {
+        "retailer": "Amazon",
+        "priceCents": null,
+        "originalPriceCents": null,
+        "currency": "USD",
+        "affiliateUrl": "https://www.amazon.com/s?k=chanel+bleu+de+chanel+edp",
+        "availability": "unknown",
+        "recordedOn": null,
+        "recordedBy": "seed"
+      }
+    ],
+    "armani-code": [
+      {
+        "retailer": "FragranceNet",
+        "priceCents": 38900,
+        "originalPriceCents": null,
+        "currency": "BRL",
+        "affiliateUrl": "https://www.fragrancenet.com/cologne/giorgio-armani/armani-code/eau-de-toilette",
+        "availability": "unknown",
+        "recordedOn": "2026-09-27",
+        "recordedBy": "manual"
+      },
+      {
+        "retailer": "Amazon",
+        "priceCents": 44990,
+        "originalPriceCents": null,
+        "currency": "BRL",
+        "affiliateUrl": "https://www.amazon.com.br/dp/B000XYZ",
+        "availability": "unknown",
+        "recordedOn": "2026-09-27",
+        "recordedBy": "manual"
+      }
+    ],
+    "d-and-g-light-blue": [
+      {
+        "retailer": "FragranceNet",
+        "priceCents": 24900,
+        "originalPriceCents": null,
+        "currency": "BRL",
+        "affiliateUrl": "https://www.fragrancenet.com/cologne/dolce-and-gabbana/light-blue/eau-de-toilette",
+        "availability": "unknown",
+        "recordedOn": "2026-09-27",
+        "recordedBy": "manual"
+      },
+      {
+        "retailer": "Amazon",
+        "priceCents": 27990,
+        "originalPriceCents": null,
+        "currency": "BRL",
+        "affiliateUrl": "https://www.amazon.com.br/dp/B000ABC",
+        "availability": "unknown",
+        "recordedOn": "2026-09-27",
+        "recordedBy": "manual"
+      }
+    ]
+  }
+}

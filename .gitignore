@@ -51,3 +51,7 @@ data/*.lock
 
 # Diagnostic backups (not part of the app)
 *.bak-before-*
+*.backup-*
+
+# Working file for batch-update-coupons.js. Copy the template, fill it, run it, and keep it out of the repo -- a half-filled or stale batch is worse than no batch.
+batch-updates.json
